@@ -7,23 +7,26 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
 class UserService {
+private:
+    static unordered_map<string, int> clients; // 由用户名映射到文件描述符的 map
 public:
-    void process_rq(const vector<string> &request); // 处理请求
-    void login(string username); // 登录
+    void process_rq(const vector<string> &request, int fd); // 处理请求
+    void login(string username, int fd); // 登录
 };
 
-void UserService::process_rq(const vector<string> &request) {
+void UserService::process_rq(const vector<string> &request, int fd) {
     if (request[1] == "login") {
         // uno01 login username
-        login(request[2]);
+        login(request[2], fd);
     }
 }
 
-void UserService::login(string username) {
+void UserService::login(string username, int fd) {
 
 }
 

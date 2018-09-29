@@ -73,7 +73,13 @@ void setup(pthread_attr_t *attrp) {
     server_bytes_sent = 0;
 }
 
+/**
+ * 处理请求，由多线程执行
+ * @param fdptr 文件描述符指针
+ * @return
+ */
 void *handle_call(void *fdptr) {
+    // TODO 处理完成后销毁线程?
     FILE *fpin;
     char request[BUFSIZ];
     int fd;
@@ -96,7 +102,7 @@ void process_rq(char *request, int fd) {
     vector<string> splitStr;
     split(splitStr, rq, " ");
     if (splitStr[0] == "uno01")
-        userService.process_rq(splitStr);
+        userService.process_rq(splitStr, fd);
     else if (splitStr[0] == "uno02")
         gameService.process_rq(splitStr);
     else {

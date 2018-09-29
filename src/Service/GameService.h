@@ -7,10 +7,13 @@
 
 #include <string>
 #include <vector>
+#include "../Model/GameTable.h"
 
 using namespace std;
 
 class GameService {
+private:
+    static vector<GameTable> gameTables;
 public:
     void process_rq(const vector<string> &request); // 处理请求
     void playCard(string username); // 打牌

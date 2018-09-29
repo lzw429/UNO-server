@@ -6,12 +6,21 @@
 #include <netdb.h>
 #include <time.h>
 #include <strings.h>
+#include <string>
 
 #define HOSTLEN 256
 #define BACKLOG 1
 
+using namespace std;
+
+// 声明
+int make_server_socket(int portnum);
+
 int make_server_socket_q(int, int);
 
+int sendMsg(int fd, FILE **fpp, string msg);
+
+// 实现
 int make_server_socket(int portnum) {
     return make_server_socket_q(portnum, BACKLOG);
 }
@@ -40,6 +49,7 @@ int make_server_socket_q(int portnum, int backlog) {
     return sock_id;
 }
 
+
 int connect_to_server(char *host, int portnum) {
     int sock;
     struct sockaddr_in servadd; /* the number to call */
@@ -59,4 +69,25 @@ int connect_to_server(char *host, int portnum) {
     if (connect(sock, (struct sockaddr *) &servadd, sizeof(servadd)) != 0)
         return -1;
     return sock;
+}
+
+/**
+ * 向客户端发送消息
+ * @param fd 文件描述符
+ * @param fpp 指向文件指针的指针
+ * @param msg 消息内容
+ * @return 发送的字节数
+ */
+int sendMsg(int fd, FILE **fpp, string msg) {
+    FILE *fp = fdopen(fd, "w");
+    int bytes = 0;
+
+    if (fp != nullptr)
+        bytes = fprintf(fp, msg);
+    fflush(fp);
+    if (fpp)
+        *fpp = fp;
+    else
+        fclose(fp);
+    return bytes;
 }
