@@ -16,7 +16,7 @@ int server_bytes_sent;
 int server_requests;
 
 // 互斥量
-pthread_mutex_t mutex;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;;
 
 // 函数声明
 
@@ -44,18 +44,18 @@ int main(int ac, char *av[]) {
     }
 
     setup(&attr);
+    printf("UNOServer has started\n");
 
     // 主循环，接收请求，以新线程处理请求
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (1) {
         fd = accept(sock, nullptr, nullptr);
-
         fdptr = (int *) malloc(sizeof(int));
         *fdptr = fd;
         int ret = pthread_create(&worker, &attr, handle_call, fdptr);
         if (ret != 0) {
-            perror("thread create failed");
+            perror("UNOServer: thread create failed");
             exit(2);
         }
     }
@@ -98,9 +98,9 @@ void *handle_call(void *fdptr) {
 void process_rq(char *request, int fd) {
     UserService userService;
     GameService gameService;
-    string rq = request;
     vector<string> splitStr;
-    split(splitStr, rq, " ");
+    string rq_str = request;
+    split(splitStr, rq_str, boost::is_any_of(" "));
     if (splitStr[0] == "uno01")
         userService.process_rq(splitStr, fd);
     else if (splitStr[0] == "uno02")

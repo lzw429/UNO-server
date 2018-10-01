@@ -16,13 +16,13 @@ private:
     static vector<GameTable> gameTables;
 public:
     void process_rq(const vector<string> &request); // 处理请求
-    void playCard(string username); // 打牌
-    void drawCard(string username);  // 抽牌
-    void sayUNO(string username); // 说 UNO
+
 };
 
 void GameService::process_rq(const vector<string> &request) {
+    if (request[1] == "hall") { // 请求大厅数据
 
+    }
 }
 
 

@@ -13,12 +13,15 @@
 
 using namespace std;
 
+#ifndef SOCKLIB_H
+#define SOCKLIB_H
+
 // 声明
 int make_server_socket(int portnum);
 
 int make_server_socket_q(int, int);
 
-int sendMsg(int fd, FILE **fpp, string msg);
+int sendMsg(int fd, FILE **fpp, char *msg);
 
 // 实现
 int make_server_socket(int portnum) {
@@ -78,7 +81,7 @@ int connect_to_server(char *host, int portnum) {
  * @param msg 消息内容
  * @return 发送的字节数
  */
-int sendMsg(int fd, FILE **fpp, string msg) {
+int sendMsg(int fd, FILE **fpp, const char *msg) {
     FILE *fp = fdopen(fd, "w");
     int bytes = 0;
 
@@ -91,3 +94,5 @@ int sendMsg(int fd, FILE **fpp, string msg) {
         fclose(fp);
     return bytes;
 }
+
+#endif// SOCKLIB_H
