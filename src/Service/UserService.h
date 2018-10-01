@@ -23,7 +23,7 @@ public:
 
 void UserService::process_rq(const vector<string> &request, int fd) {
     if (request[1] == "login") {
-        // uno01 login username
+        // uno01 login username\r\n
         login(request[2].substr(0, request[2].size() - 2), fd);
     }
 }

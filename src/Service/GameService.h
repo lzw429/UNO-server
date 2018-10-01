@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "../Model/GameTable.h"
+#include "../socklib.h"
 
 using namespace std;
 
@@ -15,14 +16,26 @@ class GameService {
 private:
     static vector<GameTable> gameTables;
 public:
-    void process_rq(const vector<string> &request); // 处理请求
-
+    void process_rq(const vector<string> &request, int fd); // 处理请求
+    void sendGameTables(int fd);
 };
 
-void GameService::process_rq(const vector<string> &request) {
-    if (request[1] == "hall") { // 请求大厅数据
+vector<GameTable> GameService::gameTables;
 
+void GameService::process_rq(const vector<string> &request, int fd) {
+    if (request[1] == "hall\r\n") { // 请求大厅数据
+        sendGameTables(fd);
     }
+}
+
+void GameService::sendGameTables(int fd) {
+    string msg = "uno02 hall\r\n\r\n";
+    for (GameTable gameTable:gameTables) {
+        msg = msg + gameTable.getPlayerName(0) + ","
+              + gameTable.getPlayerName(1) + ","
+              + (gameTable.isStarted() ? "1" : "0") + "\r\n";
+    }
+    sendMsg(fd, nullptr, msg.c_str());
 }
 
 

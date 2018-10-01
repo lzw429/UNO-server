@@ -19,6 +19,8 @@
 |客户端|服务器|请求大厅数据|uno02 hall|
 |服务器|客户端|返回大厅数据|uno02 hall\r\n\r\nContent|
 
+each line of Content = player1,player2,started\r\n
+
 ### 2. 对局初始化
 
 |发送方|接受方|含义|内容|

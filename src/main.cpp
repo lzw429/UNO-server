@@ -104,7 +104,7 @@ void process_rq(char *request, int fd) {
     if (splitStr[0] == "uno01")
         userService.process_rq(splitStr, fd);
     else if (splitStr[0] == "uno02")
-        gameService.process_rq(splitStr);
+        gameService.process_rq(splitStr, fd);
     else {
         throw "process_rq: request split exception";
     }
