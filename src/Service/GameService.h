@@ -38,5 +38,4 @@ void GameService::sendGameTables(int fd) {
     sendMsg(fd, nullptr, msg.c_str());
 }
 
-
 #endif //UNOSERVER_GAMESERVICE_H

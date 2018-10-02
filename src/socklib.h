@@ -88,6 +88,7 @@ int sendMsg(int fd, FILE **fpp, const char *msg) {
     if (fp != nullptr)
         bytes = fprintf(fp, msg);
     fflush(fp);
+    printf("Server send: %s", msg);
     if (fpp)
         *fpp = fp;
     else

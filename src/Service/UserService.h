@@ -31,12 +31,12 @@ void UserService::process_rq(const vector<string> &request, int fd) {
 unordered_map<string, int> UserService::clients;
 
 void UserService::login(string username, int fd) {
-    string msg = "uno01 login " + username + "\r\n";
+    string msg = "uno01 login " + username;
     if (clients.find(username) != clients.end()) { // 该用户已注册
-        msg += " 0";
-        printf("UserService: user %s has been registered\n", username.c_str());
+        msg += " 0\r\n";
+        printf("UserService: user %s cannot be registered again\n", username.c_str());
     } else { // 该用户未注册
-        msg += " 1";
+        msg += " 1\r\n";
         printf("UserService: user %s got registered\n", username.c_str());
         clients[username] = fd;
     }
