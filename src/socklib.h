@@ -7,6 +7,7 @@
 #include <time.h>
 #include <strings.h>
 #include <string>
+#include <cstring>
 
 #define HOSTLEN 256
 #define BACKLOG 1
@@ -21,7 +22,11 @@ int make_server_socket(int portnum);
 
 int make_server_socket_q(int, int);
 
-int sendMsg(int fd, FILE **fpp, char *msg);
+int sendMsg(int fd, FILE **fpp, const char *msg);
+
+int read_til_crnl(FILE *fp);
+
+struct sockaddr_in saddr; /* build our address here */
 
 // 实现
 int make_server_socket(int portnum) {
@@ -29,7 +34,6 @@ int make_server_socket(int portnum) {
 }
 
 int make_server_socket_q(int portnum, int backlog) {
-    struct sockaddr_in saddr; /* build our address here */
     struct hostent *hp; /* this is part of our */
     char hostname[HOSTLEN]; /* address */
     int sock_id; /* the socket */
@@ -82,18 +86,36 @@ int connect_to_server(char *host, int portnum) {
  * @return 发送的字节数
  */
 int sendMsg(int fd, FILE **fpp, const char *msg) {
-    FILE *fp = fdopen(fd, "w");
-    int bytes = 0;
+    string msgStr = msg;
+    int len = send(fd, msg, msgStr.size(), 0);
+    if (len >= 0)
+        printf("Server send: %s", msg);
+    else {
+        printf("Send message exception\n");
+    }
+    return len;
 
-    if (fp != nullptr)
-        bytes = fprintf(fp, msg);
-    fflush(fp);
-    printf("Server send: %s", msg);
-    if (fpp)
-        *fpp = fp;
-    else
-        fclose(fp);
-    return bytes;
+//    string msg_str = msg;
+//
+//    FILE *fp = fdopen(fd, "w");
+//    int bytes = 0;
+//
+//    if (fp != nullptr)
+//        bytes = fprintf(fp, msg);
+//    fflush(fp);
+//    printf("Server send: %s", msg);
+//    if (fpp)
+//        *fpp = fp;
+//    else
+//        fclose(fp);
+//    return bytes;
+}
+
+int read_til_crnl(FILE *fp) {
+    char buf[BUFSIZ];
+    while (
+            fgets(buf, BUFSIZ, fp) != NULL &&
+            strcmp(buf, "\r\n") != 0);
 }
 
 #endif// SOCKLIB_H

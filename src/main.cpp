@@ -51,13 +51,24 @@ int main(int ac, char *av[]) {
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (1) {
         fd = accept(sock, nullptr, nullptr);
+
+        pthread_mutex_lock(&mutex);
+        server_requests++;
+        pthread_mutex_unlock(&mutex);
+
+        if (fd == -1) {
+            perror("UNOServer: socket connection failed");
+            continue;
+        }
         fdptr = (int *) malloc(sizeof(int));
-        *fdptr = fd;
+        *fdptr = fd; // 作为参数传给线程
         int ret = pthread_create(&worker, &attr, handle_call, fdptr);
         if (ret != 0) {
             perror("UNOServer: thread create failed");
             exit(2);
         }
+        // pthread_join(worker, nullptr);
+        // close(fd);
     }
 #pragma clang diagnostic pop
 }
@@ -87,15 +98,33 @@ void *handle_call(void *fdptr) {
     fd = *(int *) fdptr;
     free(fdptr); // 由参数获取文件描述符
 
-    fpin = fdopen(fd, "r"); // 缓冲输入
-    fgets(request, BUFSIZ, fpin); // 读取客户端请求
-    printf("Got a call on %d: request = %s", fd, request);
-    process_rq(request, fd); // 处理客户端请求
+//    fpin = fdopen(fd, "r"); // 缓冲输入
+//    while (1) {// 读取客户端请求
+//        bzero(request, BUFSIZ);
+//        if ((fgets(request, BUFSIZ, fpin)) > 0) {
+//            printf("Got a call on %d: request = %s", fd, request);
+//            process_rq(request, fd); // 处理客户端请求}
+//        }
+//    }
+//    fclose(fpin);
+//    return nullptr;
 
-    fclose(fpin);
+    while (1) {
+        bzero(request, BUFSIZ);
+        int len = recv(fd, request, BUFSIZ, 0);
+        if (len < 0) {
+            printf("Receive data failed\n");
+            exit(1);
+        }
+        printf("Got a call on %d: request = %s", fd, request);
+        process_rq(request, fd); // 处理客户端请求
+    }
+
 }
 
 void process_rq(char *request, int fd) {
+    if (strcmp(request, "") == 0)
+        return;
     UserService userService;
     GameService gameService;
     vector<string> splitStr;
