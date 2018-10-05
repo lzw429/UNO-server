@@ -13,9 +13,14 @@ class GameTable { // 游戏桌
 private:
     vector<Player> players;
     CardDeck cardDeck;
-    bool started;
+    int status;
 
 public:
+    // status
+    const int IDLE = 0;
+    const int WAITING = 1;
+    const int GAMING = 2;
+
     const vector<Player> &getPlayers() const {
         return players;
     }
@@ -32,19 +37,21 @@ public:
         GameTable::cardDeck = cardDeck;
     }
 
-    bool isStarted() const {
-        return started;
-    }
-
-    void setStarted(bool started) {
-        GameTable::started = started;
-    }
-
     string getPlayerName(int i) {
         if (i + 1 > players.size())
-            return nullptr;
+            return "";
         return players[i].getUsername();
     }
+
+    int getStatus() const {
+        return status;
+    }
+
+    void setStatus(int status) {
+        GameTable::status = status;
+    }
+
+    GameTable() { status = IDLE; }
 };
 
 

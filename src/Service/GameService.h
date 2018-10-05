@@ -20,7 +20,7 @@ public:
     void sendGameTables(int fd);
 };
 
-vector<GameTable> GameService::gameTables;
+vector<GameTable> GameService::gameTables(10); // static
 
 void GameService::process_rq(const vector<string> &request, int fd) {
     if (request[1] == "hall\r\n") { // 请求大厅数据
@@ -33,7 +33,7 @@ void GameService::sendGameTables(int fd) {
     for (GameTable gameTable:gameTables) {
         msg = msg + gameTable.getPlayerName(0) + ","
               + gameTable.getPlayerName(1) + ","
-              + (gameTable.isStarted() ? "1" : "0") + "\r\n";
+              + to_string(gameTable.getStatus()) + "\r\n";
     }
     sendMsg(fd, nullptr, msg.c_str());
 }

@@ -10,5 +10,3 @@ find_package(Boost)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(UNOServer ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(UNOServer ${Boost_LIBRARIES})
-
-add_executable(test test/main.cpp)

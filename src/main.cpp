@@ -111,15 +111,15 @@ void *handle_call(void *fdptr) {
 
     while (1) {
         bzero(request, BUFSIZ);
-        int len = recv(fd, request, BUFSIZ, 0);
+        ssize_t len = recv(fd, request, BUFSIZ, 0);
         if (len < 0) {
             printf("Receive data failed\n");
             exit(1);
+        } else if (len > 0) {
+            printf("Got a call on %d: request = %s", fd, request);
+            process_rq(request, fd); // 处理客户端请求}
         }
-        printf("Got a call on %d: request = %s", fd, request);
-        process_rq(request, fd); // 处理客户端请求
     }
-
 }
 
 void process_rq(char *request, int fd) {
@@ -137,4 +137,4 @@ void process_rq(char *request, int fd) {
     else {
         throw "process_rq: request split exception";
     }
-};
+}
