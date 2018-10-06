@@ -21,11 +21,19 @@
 
 each line of Content = player1,player2,status\r\n
 
-### 2. 对局初始化
+### 2. 房间
 
 |发送方|接受方|含义|内容|
 |---|---|---|---|
-|客户端|服务器|请求对局信息|uno02 gamestatus username|
+|客户端|服务器|进入房间|uno02 enterroom username roomnumber|
+|服务器|客户端|进入房间成功|uno02 enterroom roomnumber 1|
+|服务器|客户端|进入房间失败|uno02 enterroom roomnumber 0|
+|客户端|服务器|退出房间|uno02 quitroom username|
+
+### 3. 游戏
+
+|发送方|接受方|含义|内容|
+|---|---|---|---|
 |客户端|服务器|打牌|uno02 playcard username|
 |客户端|服务器|抽牌|uno02 drawcard username|
 |客户端|服务器|说 UNO|uno02 sayuno username|

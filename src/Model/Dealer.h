@@ -6,6 +6,7 @@
 #define UNOSERVER_DEALER_H
 
 #include <random>
+#include <stack>
 #include "Player.h"
 #include "CardDeck.h"
 #include "UNOCard.h"
@@ -35,27 +36,23 @@ public:
         }
 
         for (const UNOCard &card:shuffledCards) {
-            cardStack.push_back(card);
+            cardStack.push(card);
         }
         return cardStack;
     }
 
-    void spreadOut(vector<Player> &players) {
+    void spreadOut(vector<Player *> &players) {
         // 给每位玩家发牌
         for (int i = 1; i <= firstHand; i++) {
-            for (Player &p:players) {
-                p.obtainCard(cardStack.top());
+            for (Player *p:players) {
+                p->obtainCard(cardStack.top());
                 cardStack.pop();
             }
         }
     }
 
-    const UNOCard *getCard() {
-        if (cardStack.size() < 1) {
-            printf("Dealer: CardStack has no card now")
-            return nullptr;
-        }
-        const UNOCard *ret = cardStack.top();
+    const UNOCard getACard() {
+        const UNOCard ret = cardStack.top();
         cardStack.pop();
         return ret;
     }

@@ -33,7 +33,7 @@ public:
             }
 
             // 创建 24 张动作牌，每种颜色每种动作类型 2 张
-            for (string type: actionTypes) {
+            for (const string &type: actionTypes) {
                 for (int i = 0; i < 2; i++) {
                     UNOCard unoCard(color, "ACTION", type);
                 }

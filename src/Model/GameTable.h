@@ -14,7 +14,7 @@ using namespace std;
 
 class GameTable { // 游戏桌
 private:
-    vector<Player> players;     // 玩家
+    vector<Player *> players;   // 玩家
     int status;                 // 状态
     int mode;                   // 模式
     stack<UNOCard> cardStack;   // 牌栈
@@ -28,35 +28,79 @@ public:
 
     // mode 常量
     const int ONLINE = 2;
+    const int PLAYERMAX = 2;
 
-    explicit GameTable(const int mode) : mode(mode) { // 构造方法
-        this->mode = mode;
-        this->status = IDLE;
-        this->cardStack = dealer.shuffle();
-        dealer.spreadOut(players);
-        players.resize(2);
-    }
+    GameTable();
 
-    const vector<Player> &getPlayers() const {
-        return players;
-    }
+    explicit GameTable(const int mode);
 
-    void setPlayers(const vector<Player> &players) {
-        GameTable::players = players;
-    }
+    const vector<Player *> &getPlayers() const;
 
-    void setPlayer(int i, const Player &player) {
-        players[i] = player;
-    }
+    void addPlayer(Player &player);
 
-    int getStatus() const {
-        return status;
-    }
+    string getPlayerName(int i);
 
-    void setStatus(int status) {
-        GameTable::status = status;
-    }
+    void removePlayer(const string &username);
+
+    void removePlayer(const Player *player);
+
+    int getStatus() const;
+
+    void setStatus(int status);
 };
 
+GameTable::GameTable() : status(0), mode(-1) {
+
+}
+
+GameTable::GameTable(const int mode) : mode(mode) { // 构造方法
+    this->mode = mode;
+    this->status = IDLE;
+    this->cardStack = dealer.shuffle();
+    dealer.spreadOut(players);
+    players.resize((unsigned long) PLAYERMAX);
+}
+
+const vector<Player *> &GameTable::getPlayers() const {
+    return players;
+}
+
+void GameTable::addPlayer(Player &player) {
+    if (players.size() < PLAYERMAX) {
+        players.push_back(&player);
+    } else {
+        printf("GameTable: this table is already full");
+    }
+}
+
+string GameTable::getPlayerName(int i) {
+    if (i >= players.size())
+        return "";
+    return players[i]->getUsername();
+}
+
+void GameTable::removePlayer(const string &username) {
+    for (auto i = players.begin(); i != players.end(); i++) {
+        if ((*i)->getUsername() == username) {
+            players.erase(i);
+        }
+    }
+}
+
+void GameTable::removePlayer(const Player *player) {
+    for (auto i = players.begin(); i != players.end(); i++) {
+        if ((*i) == player) {
+            players.erase(i);
+        }
+    }
+}
+
+int GameTable::getStatus() const {
+    return status;
+}
+
+void GameTable::setStatus(int status) {
+    GameTable::status = status;
+}
 
 #endif //UNOSERVER_GAMETABLE_H

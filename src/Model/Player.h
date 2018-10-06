@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by syh on 9/29/18.
 //
@@ -8,32 +10,28 @@
 #include <string>
 #include <vector>
 #include "UNOCard.h"
+#include "User.h"
 
 using namespace std;
 
-class Player { // 玩家
+class Player : public User { // 玩家
 private:
-    string username;
     bool isMyTurn;
     bool saidUNO;
     vector<UNOCard> myCards;
     int playedCards; // 已打牌数
 
 public:
-    Player(string username) : username(username), isMyTurn(false),
+    Player(User user) : User(user) {
+    }
+
+    Player(string username) : isMyTurn(false),
                               saidUNO(false), playedCards(0) { // 构造方法
+        this->username = std::move(username); // 继承
     }
 
     void obtainCard(UNOCard card) {
         myCards.push_back(card);
-    }
-
-    const string &getUsername() const {
-        return username;
-    }
-
-    void setUsername(const string &username) {
-        Player::username = username;
     }
 
     bool isIsMyTurn() const {

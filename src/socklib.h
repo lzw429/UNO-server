@@ -1,10 +1,10 @@
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <time.h>
+#include <ctime>
 #include <strings.h>
 #include <string>
 #include <cstring>
@@ -23,8 +23,6 @@ int make_server_socket(int portnum);
 int make_server_socket_q(int, int);
 
 int sendMsg(int fd, FILE **fpp, const char *msg);
-
-int read_til_crnl(FILE *fp);
 
 struct sockaddr_in saddr; /* build our address here */
 
@@ -68,7 +66,7 @@ int connect_to_server(char *host, int portnum) {
 /** Step 2: connect to server **/
     bzero(&servadd, sizeof(servadd)); /* zero the address */
     hp = gethostbyname(host); /* lookup host's ip # */
-    if (hp == NULL)
+    if (hp == nullptr)
         return -1;
     bcopy(hp->h_addr, (struct sockaddr *) &servadd.sin_addr, hp->h_length);
     servadd.sin_port = htons(portnum); /* fill in port number */
@@ -88,9 +86,10 @@ int connect_to_server(char *host, int portnum) {
 int sendMsg(int fd, FILE **fpp, const char *msg) {
     string msgStr = msg;
     int len = send(fd, msg, msgStr.size(), 0);
-    if (len >= 0)
+    if (len >= 0) {
         printf("Server send: %s", msg);
-    else {
+
+    } else {
         printf("Send message exception\n");
     }
     return len;
@@ -109,13 +108,6 @@ int sendMsg(int fd, FILE **fpp, const char *msg) {
 //    else
 //        fclose(fp);
 //    return bytes;
-}
-
-int read_til_crnl(FILE *fp) {
-    char buf[BUFSIZ];
-    while (
-            fgets(buf, BUFSIZ, fp) != NULL &&
-            strcmp(buf, "\r\n") != 0);
 }
 
 #endif// SOCKLIB_H

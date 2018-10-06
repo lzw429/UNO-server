@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <sys/socket.h>
+#include <cstdio>
 #include "socklib.h"
 #include "Service/UserService.h"
 #include "Service/GameService.h"
@@ -26,8 +23,11 @@ void *handle_call(void *fdptr);
 
 void process_rq(char *request, int fd);
 
+int sock;
+
 int main(int ac, char *av[]) {
-    int sock, fd;
+    void closeSocket(int);
+    int fd;
     int *fdptr;
     pthread_t worker;
     pthread_attr_t attr;
@@ -46,10 +46,12 @@ int main(int ac, char *av[]) {
     setup(&attr);
     printf("UNOServer has started\n");
 
+    signal(SIGINT, closeSocket);
+
     // 主循环，接收请求，以新线程处理请求
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
-    while (1) {
+    while (true) {
         fd = accept(sock, nullptr, nullptr);
 
         pthread_mutex_lock(&mutex);
@@ -91,7 +93,8 @@ void setup(pthread_attr_t *attrp) {
  */
 void *handle_call(void *fdptr) {
     // TODO 处理完成后销毁线程?
-    FILE *fpin;
+    // TODO 客户端退出后关闭 socket
+//    FILE *fpin;
     char request[BUFSIZ];
     int fd;
 
@@ -109,7 +112,7 @@ void *handle_call(void *fdptr) {
 //    fclose(fpin);
 //    return nullptr;
 
-    while (1) {
+    while (true) {
         bzero(request, BUFSIZ);
         ssize_t len = recv(fd, request, BUFSIZ, 0);
         if (len < 0) {
@@ -137,4 +140,13 @@ void process_rq(char *request, int fd) {
     else {
         throw "process_rq: request split exception";
     }
+}
+
+void closeSocket(int signum) {
+#ifndef CLOSESOCKET
+    if (sock != -1) {
+        shutdown(sock, SHUT_RDWR);
+        printf("Socket shutdown\n");
+    }
+#endif
 }
