@@ -21,7 +21,7 @@ public:
     }
 
     CardDeck() { // 构造函数
-        for (string color:UNO_COLORS) {
+        for (const string &color:UNO_COLORS) {
             // 创建 76 张数字牌，除了 0 每个数字 2 张
             for (int num:UNO_NUMBERS) {
                 int i = 0;
@@ -40,7 +40,7 @@ public:
             }
         }
         // 创建万能牌
-        for (string type:wildTypes) {
+        for (const string &type:wildTypes) {
             for (int i = 0; i < 4; i++) {
                 UNOCard unoCard("BLACK", type, "");
                 UNOCards.push_back(unoCard);

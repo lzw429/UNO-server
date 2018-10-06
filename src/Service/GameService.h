@@ -31,8 +31,8 @@ void GameService::process_rq(const vector<string> &request, int fd) {
 void GameService::sendGameTables(int fd) {
     string msg = "uno02 hall\r\n\r\n";
     for (GameTable gameTable:gameTables) {
-        msg = msg + gameTable.getPlayerName(0) + ","
-              + gameTable.getPlayerName(1) + ","
+        msg = msg + gameTable.getPlayers()[0].getUsername() + ","
+              + gameTable.getPlayers()[1].getUsername() + ","
               + to_string(gameTable.getStatus()) + "\r\n";
     }
     sendMsg(fd, nullptr, msg.c_str());

@@ -5,13 +5,17 @@
 #ifndef UNOSERVER_GAMECONSTANTS_H
 #define UNOSERVER_GAMECONSTANTS_H
 
+#include <string>
+
+using namespace std;
 
 class GameConstants { // 接口
 public:
-    string UNO_COLORS[4] = {"red", "blue", "green", "yellow"};
-    int UNO_NUMBERS[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    const int firstHand = 8; // 初始牌数
+    const string UNO_COLORS[4] = {"red", "blue", "green", "yellow"};
+    const int UNO_NUMBERS[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    string actionTypes[3] = {"reverse", "skip", "draw2plus"};
+    const string actionTypes[3] = {"reverse", "skip", "draw2plus"};
     string wildTypes[2] = {"w_colorpicker", "w_draw4plus"};
 };
 

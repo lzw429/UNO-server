@@ -18,7 +18,16 @@ private:
     bool saidUNO;
     vector<UNOCard> myCards;
     int playedCards; // 已打牌数
+
 public:
+    Player(string username) : username(username), isMyTurn(false),
+                              saidUNO(false), playedCards(0) { // 构造方法
+    }
+
+    void obtainCard(UNOCard card) {
+        myCards.push_back(card);
+    }
+
     const string &getUsername() const {
         return username;
     }
