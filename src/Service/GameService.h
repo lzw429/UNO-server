@@ -11,7 +11,7 @@
 #include <vector>
 #include "UserService.h"
 #include "../Model/GameTable.h"
-#include "../socklib.h"
+#include "../Util/socklib.h"
 
 using namespace std;
 
