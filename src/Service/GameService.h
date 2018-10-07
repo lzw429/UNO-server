@@ -22,6 +22,7 @@ public:
     void process_rq(const vector<string> &request, int fd); // 处理请求
     void sendGameTables(int fd); // 发送游戏房间 uno02 hall\r\n
     void enterRoom(string username, string roomNum, int fd); // 进入游戏房间 uno02 enterroom username roomNumber
+    void initCardInfo(string username, string roomNum, int fd); // 初始化卡牌信息
     void quitRoom(string username, int fd); // 退出游戏房间 uno02 quitroom username
 };
 
@@ -37,12 +38,16 @@ void GameService::process_rq(const vector<string> &request, int fd) {
     }
 }
 
+/**
+ * 发送房间信息
+ * @param fd 文件描述符
+ */
 void GameService::sendGameTables(int fd) {
     string msg = "uno02 hall\r\n\r\n";
     try {
         for (GameTable gameTable:gameTables) {
-            msg = msg + gameTable.getPlayerName(0) + ","
-                  + gameTable.getPlayerName(1) + ","
+            msg = msg + gameTable.getPlayer(0)->getUsername() + ","
+                  + gameTable.getPlayer(1)->getUsername() + ","
                   + to_string(gameTable.getStatus()) + "\r\n";
         }
         sendMsg(fd, nullptr, msg.c_str());
@@ -51,6 +56,12 @@ void GameService::sendGameTables(int fd) {
     }
 }
 
+/**
+ * 客户请求进入房间，向客户返回进入结果
+ * @param username 用户名
+ * @param roomNum 房间号
+ * @param fd 文件描述符
+ */
 void GameService::enterRoom(string username, string roomNum, int fd) {
     int room = stoi(roomNum);
     if (room > gameTables.size() || room < 0) {
@@ -64,12 +75,13 @@ void GameService::enterRoom(string username, string roomNum, int fd) {
     user.setRoomNum(room); // 设置房间号
     Player player(user);
     gameTables[room].addPlayer(player); // 进入房间
+
     // 向客户端返回进入房间成功
     char *msg = new char[64];
     sprintf(msg, "uno02 enterroom %d 1\r\n", room);
     sendMsg(fd, nullptr, msg);
     printf("GameService: %s has entered room #%s", username.c_str(), roomNum.c_str());
-    delete msg;
+    delete[]msg;
 }
 
 void GameService::quitRoom(string username, int fd) {
@@ -85,6 +97,39 @@ void GameService::quitRoom(string username, int fd) {
     user.setRoomNum(-1);
     gameTables[room].removePlayer(username); // 退出房间
     printf("GameService: %s has quit room #%d", username.c_str(), room);
+}
+
+/**
+ * 对局开始发送初始的卡牌信息
+ * @param username 用户名
+ * @param roomNum  房间号
+ * @param fd 文件描述符
+ */
+void GameService::initCardInfo(string username, string roomNum, int fd) {
+    stringstream ss(roomNum);
+    int room = -1;
+    ss >> room;
+    if (room == -1)return;
+    auto players = gameTables[room].getPlayers();
+
+    char *msg = new char[64];
+    int cardSize0 = (int) players[0]->getMyCards().size();
+    int cardSize1 = (int) players[1]->getMyCards().size();
+    sprintf(msg, "uno02 cardnum %d %d\r\n", cardSize0, cardSize1);
+    sendMsg(fd, nullptr, msg);
+    delete[]msg;
+
+    msg = new char[1024]; // 传输一个玩家手中的牌应该足够
+    string content = "";
+    for (auto card:gameTables[room].getPlayer(username)->getMyCards()) {
+        // todo content
+        content += to_string(card.getCardColor()) + " "
+                   + to_string(card.getType()) + " "
+                   + to_string(card.getValue()) + "\r\n";
+    }
+    sprintf(msg, "uno02 cardinfo\r\n\r\n%s", content);
+    sendMsg(fd, nullptr, msg);
+    delete[]msg;
 }
 
 #endif //UNOSERVER_GAMESERVICE_H

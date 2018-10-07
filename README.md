@@ -8,4 +8,4 @@ Written by C++.
 
 ## LICENSE
 
-Please see `LICENSE`, which is `GNU GENERAL PUBLIC LICENSE Version 3`.
+`GNU GENERAL PUBLIC LICENSE Version 3`

@@ -38,6 +38,10 @@ public:
 
     void addPlayer(Player &player);
 
+    Player *getPlayer(const string &username);
+
+    Player *getPlayer(int i);
+
     string getPlayerName(int i);
 
     void removePlayer(const string &username);
@@ -79,6 +83,20 @@ string GameTable::getPlayerName(int i) {
     return players[i]->getUsername();
 }
 
+Player *GameTable::getPlayer(const string &username) {
+    for (auto player:players) {
+        if (player->getUsername() == username)
+            return player;
+    }
+    return nullptr;
+}
+
+Player *GameTable::getPlayer(int i) {
+    if (i > players.size())
+        return nullptr;
+    return players[i];
+}
+
 void GameTable::removePlayer(const string &username) {
     for (auto i = players.begin(); i != players.end(); i++) {
         if ((*i)->getUsername() == username) {
@@ -102,5 +120,4 @@ int GameTable::getStatus() const {
 void GameTable::setStatus(int status) {
     GameTable::status = status;
 }
-
 #endif //UNOSERVER_GAMETABLE_H

@@ -11,17 +11,15 @@
 |服务器|客户端|用户登录失败|uno01 login username 0|
 |客户端|服务器|用户离线   |uno01 logout username|
 
-## 02. 游戏操作
-
-### 1. 游戏大厅
+## 02. 游戏大厅
 |发送方|接受方|含义|内容|
 |---|---|---|---|
 |客户端|服务器|请求大厅数据|uno02 hall|
 |服务器|客户端|返回大厅数据|uno02 hall\r\n\r\nContent|
 
-each line of Content = player1,player2,status\r\n
+Content 每行代表一个房间: player1,player2,status\r\n
 
-### 2. 房间
+## 03. 房间
 
 |发送方|接受方|含义|内容|
 |---|---|---|---|
@@ -30,7 +28,16 @@ each line of Content = player1,player2,status\r\n
 |服务器|客户端|进入房间失败|uno02 enterroom roomnumber 0|
 |客户端|服务器|退出房间|uno02 quitroom username|
 
-### 3. 游戏
+## 04. 卡牌信息
+
+|发送方|接受方|含义|内容|
+|---|---|---|---|
+|服务器|客户端|各玩家的卡牌数量|uno02 cardnum num0 num1|
+|服务器|客户端|客户的卡牌信息|uno02 cardinfo\r\n\r\nContent|
+
+Content 每行代表一张卡：color,value,type\r\n
+
+## 05. 游戏操作
 
 |发送方|接受方|含义|内容|
 |---|---|---|---|

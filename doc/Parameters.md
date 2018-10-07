@@ -1,6 +1,8 @@
 # 参数
 
-UNOServer 和 UNOClient 统一使用的参数。
+[UNOServer](https://github.com/lzw429/UNO-server) 
+和 [UNOClient](https://github.com/lzw429/UNO-Client-2) 
+统一使用的参数。
 
 ## 1. 房间状态
 
@@ -14,3 +16,19 @@ UNOServer 和 UNOClient 统一使用的参数。
 |模式|常量|值|
 |---|---|---|
 |联机|`ONLINE`|`2`|
+
+## 3. 卡牌
+
+|颜色|常量|值|
+|---|---|---|
+|红色|`RED`|`0`|
+|蓝色|`BLUE`|`1`|
+|绿色|`GREEN`|`2`|
+|黄色|`YELLOW`|`3`|
+|黑色|`BLACK`|`4`|
+
+|类别|常量|值|
+|---|---|---|
+|数字卡|`NUMBER`|`1`|
+|动作卡|`ACTION`|`2`|
+|万能卡|`WILD`|`3`|
