@@ -46,9 +46,11 @@ void GameService::sendGameTables(int fd) {
     string msg = "uno02 hall\r\n\r\n";
     try {
         for (GameTable gameTable:gameTables) {
-            msg = msg + gameTable.getPlayer(0)->getUsername() + ","
-                  + gameTable.getPlayer(1)->getUsername() + ","
-                  + to_string(gameTable.getStatus()) + "\r\n";
+            Player *player0 = gameTable.getPlayer(0);
+            Player *player1 = gameTable.getPlayer(1);
+            string username0 = (player0 != nullptr) ? player0->getUsername() : "";
+            string username1 = (player1 != nullptr) ? player1->getUsername() : "";
+            msg = msg + username0 + "," + username1 + "," + to_string(gameTable.getStatus()) + "\r\n";
         }
         sendMsg(fd, nullptr, msg.c_str());
     } catch (exception e) {
@@ -131,5 +133,7 @@ void GameService::initCardInfo(string username, string roomNum, int fd) {
     sendMsg(fd, nullptr, msg);
     delete[]msg;
 }
+
+// todo 退出房间
 
 #endif //UNOSERVER_GAMESERVICE_H

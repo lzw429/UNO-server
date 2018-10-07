@@ -32,7 +32,7 @@ public:
 
     GameTable();
 
-    explicit GameTable(const int mode);
+    explicit GameTable(int mode);
 
     const vector<Player *> &getPlayers() const;
 
@@ -57,7 +57,7 @@ GameTable::GameTable() : status(0), mode(-1) {
 
 }
 
-GameTable::GameTable(const int mode) : mode(mode) { // 构造方法
+GameTable::GameTable(int mode) : mode(mode) { // 构造方法
     this->mode = mode;
     this->status = IDLE;
     this->cardStack = dealer.shuffle();
@@ -92,9 +92,9 @@ Player *GameTable::getPlayer(const string &username) {
 }
 
 Player *GameTable::getPlayer(int i) {
-    if (i > players.size())
+    if (i >= players.size())
         return nullptr;
-    return players[i];
+    return *(players.begin() + i);
 }
 
 void GameTable::removePlayer(const string &username) {
@@ -120,4 +120,5 @@ int GameTable::getStatus() const {
 void GameTable::setStatus(int status) {
     GameTable::status = status;
 }
+
 #endif //UNOSERVER_GAMETABLE_H

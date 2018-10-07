@@ -47,7 +47,7 @@ public:
                 UNOCards.push_back(unoCard);
             }
         }
-        printf("CardDeck: %d cards has been created\n");
+        printf("CardDeck: %d cards has been created\n", cardNumber);
     }
 };
 

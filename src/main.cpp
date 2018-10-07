@@ -3,6 +3,7 @@
 #include "Service/UserService.h"
 #include "Service/GameService.h"
 #include <boost/algorithm/string.hpp>
+#include <csignal>
 
 using namespace std;
 using namespace boost;
@@ -27,7 +28,7 @@ int sock;
 
 int main(int ac, char *av[]) {
     void closeSocket(int);
-    int fd;
+    int fd = -1;
     int *fdptr;
     pthread_t worker;
     pthread_attr_t attr;

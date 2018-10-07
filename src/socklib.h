@@ -38,7 +38,13 @@ int make_server_socket_q(int portnum, int backlog) {
     sock_id = socket(PF_INET, SOCK_STREAM, 0); /* get a socket */
     if (sock_id == -1)
         return -1;
-    /** build address and bind it to socket **/
+    /** 设置 socket 选项避免被占用的错误 **/
+    int on = 1;
+    if ((setsockopt(sock_id, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0) {
+        perror("setsockopt failed");
+        exit(EXIT_FAILURE);
+    }
+    /** 构建地址并将 socket 绑定 **/
     bzero((void *) &saddr, sizeof(saddr)); /* clear out struct */
     gethostname(hostname, HOSTLEN); /* where am I ? */
     hp = gethostbyname(hostname); /* get info about host */
@@ -48,7 +54,7 @@ int make_server_socket_q(int portnum, int backlog) {
     saddr.sin_family = AF_INET; /* fill in addr family */
     if (bind(sock_id, (struct sockaddr *) &saddr, sizeof(saddr)) != 0)
         return -1;
-/** arrange for incoming calls **/
+    /** 监听请求 **/
     if (listen(sock_id, backlog) != 0)
         return -1;
     return sock_id;
