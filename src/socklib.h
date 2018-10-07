@@ -91,12 +91,11 @@ int connect_to_server(char *host, int portnum) {
  */
 int sendMsg(int fd, FILE **fpp, const char *msg) {
     string msgStr = msg;
-    int len = send(fd, msg, msgStr.size(), 0);
+    int len = (int) send(fd, msg, msgStr.size(), 0);
     if (len >= 0) {
         printf("Server send: %s", msg);
-
     } else {
-        printf("Send message exception\n");
+        printf("Send exception, message: %s\n", msg);
     }
     return len;
 

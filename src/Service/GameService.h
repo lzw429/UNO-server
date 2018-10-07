@@ -20,9 +20,10 @@ private:
     static vector<GameTable> gameTables;
 public:
     void process_rq(const vector<string> &request, int fd); // 处理请求
-    void sendGameTables(int fd); // 发送游戏房间 uno02 hall\r\n
+    void sendGameTables(int fd); // 发送游戏房间 uno02 hall\r\n\r\nContent
     void enterRoom(string username, string roomNum, int fd); // 进入游戏房间 uno02 enterroom username roomNumber
     void initCardInfo(string username, string roomNum, int fd); // 初始化卡牌信息
+    void sendRoomPlayer(int roomNum, int fd); // 发送房间内玩家信息 uno02 player playerlist
     void quitRoom(string username, int fd); // 退出游戏房间 uno02 quitroom username
 };
 
@@ -82,10 +83,17 @@ void GameService::enterRoom(string username, string roomNum, int fd) {
     char *msg = new char[64];
     sprintf(msg, "uno02 enterroom %d 1\r\n", room);
     sendMsg(fd, nullptr, msg);
-    printf("GameService: %s has entered room #%s", username.c_str(), roomNum.c_str());
+    printf("GameService: user %s has entered room #%s", username.c_str(), roomNum.c_str());
     delete[]msg;
+
+    sendRoomPlayer(room, fd); // 发送房间内玩家信息
 }
 
+/**
+ * 请求退出房间
+ * @param username 用户名
+ * @param fd 文件描述符
+ */
 void GameService::quitRoom(string username, int fd) {
     UserService userService;
     auto users = userService.getUsers();
@@ -129,9 +137,26 @@ void GameService::initCardInfo(string username, string roomNum, int fd) {
                    + to_string(card.getType()) + " "
                    + to_string(card.getValue()) + "\r\n";
     }
-    sprintf(msg, "uno02 cardinfo\r\n\r\n%s", content);
+    sprintf(msg, "uno02 cardinfo\r\n\r\n%s", content.c_str());
     sendMsg(fd, nullptr, msg);
     delete[]msg;
+}
+
+/**
+ * 发送指定房间内的玩家列表
+ * @param fd 文件描述符
+ * @param roomNum 房间号
+ */
+void GameService::sendRoomPlayer(int fd, int roomNum) {
+    string msg = "uno02 player ";
+    auto players = gameTables[roomNum].getPlayers();
+    if (players.size()) {
+        for (auto player:players) {
+            msg += player->getUsername();
+        }
+    }
+    msg += "\r\n";
+    sendMsg(fd, nullptr, msg.c_str());
 }
 
 // todo 退出房间
