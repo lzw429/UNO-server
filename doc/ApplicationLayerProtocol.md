@@ -26,20 +26,15 @@ Content 每行代表一个房间: player1,player2,status\r\n
 |客户端|服务器|进入房间|uno02 enterroom username roomnumber|
 |服务器|客户端|进入房间成功|uno02 enterroom roomnumber 1|
 |服务器|客户端|进入房间失败|uno02 enterroom roomnumber 0|
-|客户端|服务器|请求房间内玩家|uno02 player roomnumber|
-|服务器|客户端|返回房间内玩家|uno02 player playerlist|
+|服务器|客户端|广播房间状态|uno02 roomstatus roomnumber player1,player2,status|
 |客户端|服务器|退出房间|uno02 quitroom username|
 
-playerlist: player1,player2
-
-## 04. 卡牌信息
+## 04. 对局信息
 
 |发送方|接受方|含义|内容|
 |---|---|---|---|
-|服务器|客户端|各玩家的卡牌数量|uno02 cardnum num0 num1|
-|服务器|客户端|客户的卡牌信息|uno02 cardinfo\r\n\r\nContent|
-
-Content 每行代表一张卡：color,value,type\r\n
+|服务器|客户端|||
+|服务器|客户端|||
 
 ## 05. 游戏操作
 

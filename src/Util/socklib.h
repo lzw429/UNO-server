@@ -16,6 +16,7 @@
 #define SOCKLIB_H
 
 #include"TimeUtil.h"
+#include "../Service/UserService.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ int make_server_socket(int portnum);
 
 int make_server_socket_q(int, int);
 
-int sendMsg(int fd, FILE **fpp, const char *msg);
+int unicast(int fd, const char *msg);
 
 struct sockaddr_in saddr; /* build our address here */
 
@@ -87,11 +88,10 @@ int connect_to_server(char *host, int portnum) {
 /**
  * 向客户端发送消息
  * @param fd 文件描述符
- * @param fpp 指向文件指针的指针
  * @param msg 消息内容
  * @return 发送的字节数
  */
-int sendMsg(int fd, FILE **fpp, const char *msg) {
+int unicast(int fd, const char *msg) {
     TimeUtil timeUtil;
     string msgStr = msg;
     int len = (int) send(fd, msg, msgStr.size(), 0);
@@ -103,21 +103,26 @@ int sendMsg(int fd, FILE **fpp, const char *msg) {
                timeUtil.getTimeInMillis(timeUtil.getTimeStamp()).c_str(), msg);
     }
     return len;
-
-//    string msg_str = msg;
-//
-//    FILE *fp = fdopen(fd, "w");
-//    int bytes = 0;
-//
-//    if (fp != nullptr)
-//        bytes = fprintf(fp, msg);
-//    fflush(fp);
-//    printf("Server send: %s", msg);
-//    if (fpp)
-//        *fpp = fp;
-//    else
-//        fclose(fp);
-//    return bytes;
 }
+
+/**
+ * 向所有连接服务器的客户端发送消息
+ * @param msg 消息内容
+ * @return 发送的总字节数
+ */
+int broadcast(const char *msg) {
+    TimeUtil timeUtil;
+    UserService userService;
+    auto users = userService.getUsers();
+    int len = 0;
+    string msgStr = msg;
+
+    for (auto item:users) {
+        int fd = item.second.getFd();
+        len += unicast(fd, msg);
+    }
+    return len;
+}
+
 
 #endif// SOCKLIB_H

@@ -20,10 +20,9 @@ private:
     static vector<GameTable> gameTables;
 public:
     void process_rq(const vector<string> &request, int fd); // 处理请求
-    void sendGameTables(int fd); // 发送游戏房间 uno02 hall\r\n\r\nContent
+    void unicastGameTables(int fd); // 发送游戏房间 uno02 hall\r\n\r\nContent
     void enterRoom(string username, string roomNum, int fd); // 进入游戏房间 uno02 enterroom username roomNumber
-    void initCardInfo(string username, string roomNum, int fd); // 初始化卡牌信息
-    void sendRoomPlayer(string roomNum, int fd); // 发送房间内玩家信息 uno02 player playerlist
+    void broadcastRoomStatus(string roomNum); // 广播房间状态
     void quitRoom(string username, int fd); // 退出游戏房间 uno02 quitroom username
 };
 
@@ -31,13 +30,11 @@ vector<GameTable> GameService::gameTables(10); // static
 
 void GameService::process_rq(const vector<string> &request, int fd) {
     if (request[1] == "hall\r\n") { // 请求大厅数据
-        sendGameTables(fd);
+        unicastGameTables(fd);
     } else if (request[1] == "enterroom") { // 请求进入房间
         enterRoom(request[2], request[3], fd);
     } else if (request[1] == "quitroom") { // 请求退出房间
         quitRoom(request[2], fd);
-    } else if (request[1] == "player") { // 请求房间内玩家
-        sendRoomPlayer(request[2], fd);
     }
 }
 
@@ -45,7 +42,7 @@ void GameService::process_rq(const vector<string> &request, int fd) {
  * 发送房间信息
  * @param fd 文件描述符
  */
-void GameService::sendGameTables(int fd) {
+void GameService::unicastGameTables(int fd) {
     string msg = "uno02 hall\r\n\r\n";
     try {
         for (GameTable gameTable:gameTables) {
@@ -55,7 +52,7 @@ void GameService::sendGameTables(int fd) {
             string username1 = (player1 != nullptr) ? player1->getUsername() : "";
             msg = msg + username0 + "," + username1 + "," + to_string(gameTable.getStatus()) + "\r\n";
         }
-        sendMsg(fd, nullptr, msg.c_str());
+        unicast(fd, msg.c_str());
     } catch (exception e) {
         printf("%s\nGameService: send game tables exception\n", e.what());
     }
@@ -69,24 +66,35 @@ void GameService::sendGameTables(int fd) {
  */
 void GameService::enterRoom(string username, string roomNum, int fd) {
     int room = stoi(roomNum);
+    UserService userService;
+    char *msg = new char[64];
+
     if (room > gameTables.size() || room < 0) {
         printf("GameService: room number exception");
         return;
     }
-    UserService userService;
     auto users = userService.getUsers();
     User &user = users[username]; // 找到已登录的用户
-    // todo 判断是否可进入该房间
+    // 判断是否可进入该房间
+    GameTable gameTable;
+    if (gameTables[room].getPlayers().size() == gameTable.PLAYERMAX) {
+        // 房间已满
+        sprintf(msg, "uno02 enterroom %d 0\r\n", room);
+        unicast(fd, msg);
+        delete[]msg;
+        return;
+    }
     user.setRoomNum(room); // 设置房间号
     Player *player = new Player(user);
     gameTables[room].addPlayer(player); // 进入房间
 
     // 向客户端返回进入房间成功
-    char *msg = new char[64];
+
     sprintf(msg, "uno02 enterroom %d 1\r\n", room);
-    sendMsg(fd, nullptr, msg);
+    unicast(fd, msg);
     printf("GameService: user %s has entered room #%s", username.c_str(), roomNum.c_str());
     delete[]msg;
+    broadcastRoomStatus(room); // 广播该房间状态
 }
 
 /**
@@ -110,54 +118,22 @@ void GameService::quitRoom(string username, int fd) {
 }
 
 /**
- * 对局开始发送初始的卡牌信息
- * @param username 用户名
- * @param roomNum  房间号
+ * 发送指定房间内的玩家列表
+ * @param roomNum 房间号
  * @param fd 文件描述符
  */
-void GameService::initCardInfo(string username, string roomNum, int fd) {
-    stringstream ss(roomNum);
-    int room = -1;
-    ss >> room;
-    if (room == -1)return;
-    auto players = gameTables[room].getPlayers();
-
-    char *msg = new char[64];
-    int cardSize0 = (int) players[0]->getMyCards().size();
-    int cardSize1 = (int) players[1]->getMyCards().size();
-    sprintf(msg, "uno02 cardnum %d %d\r\n", cardSize0, cardSize1);
-    sendMsg(fd, nullptr, msg);
-    delete[]msg;
-
-    msg = new char[1024]; // 传输一个玩家手中的牌应该足够
-    string content = "";
-    for (auto card:gameTables[room].getPlayer(username)->getMyCards()) {
-        // todo content
-        content += to_string(card.getCardColor()) + " "
-                   + to_string(card.getType()) + " "
-                   + to_string(card.getValue()) + "\r\n";
-    }
-    sprintf(msg, "uno02 cardinfo\r\n\r\n%s", content.c_str());
-    sendMsg(fd, nullptr, msg);
-    delete[]msg;
-}
-
-/**
- * 发送指定房间内的玩家列表
- * @param roomNum
- * @param fd
- */
-void GameService::sendRoomPlayer(string roomNum, int fd) {
+void GameService::broadcastRoomStatus(string roomNum) {
     int room = stoi(roomNum);
-    string msg = "uno02 player ";
+    string msg = "uno02 roomstatus " + roomNum + " ";
     auto players = gameTables[room].getPlayers();
     if (players.size()) {
         for (auto player:players) {
             msg += player->getUsername();
         }
     }
+    msg += gameTables[room].getStatus();
     msg += "\r\n";
-    sendMsg(fd, nullptr, msg.c_str());
+    broadcast(msg.c_str());
 }
 
 // todo 退出房间

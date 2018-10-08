@@ -57,7 +57,7 @@ int UserService::login(const string &username, int fd) {
         User user(username, fd);
         users[username] = user;
     }
-    return sendMsg(fd, nullptr, msg.c_str());
+    return unicast(fd, msg.c_str());
 }
 
 const unordered_map<string, User> &UserService::getUsers() {
