@@ -11,8 +11,12 @@
 #include <vector>
 #include "UNOCard.h"
 #include "User.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/foreach.hpp>
 
 using namespace std;
+using namespace boost::property_tree;
 
 class Player : public User { // 玩家
 private:
@@ -51,9 +55,7 @@ public:
         }
     }
 
-    void obtainCard(UNOCard card) {
-        myCards.push_back(card);
-    }
+    /* getter & setter */
 
     bool isIsMyTurn() const {
         return isMyTurn;
@@ -87,9 +89,42 @@ public:
         Player::playedCards = playedCards;
     }
 
-    void playCard(string username); // 打牌
-    void drawCard(string username);  // 抽牌
-    void sayUNO(string username); // 说 UNO
+    /**
+       * 获取一张牌
+       * @param card 来自发牌者的牌
+       */
+    void obtainCard(UNOCard card) {
+        myCards.push_back(card);
+    }
+
+    void playCard(int cardNumber) {
+        // todo
+    }
+
+    void drawCard() {
+        // todo
+    }
+
+    void sayUNO() {
+        // todo
+    }
+
+    string toJson() {
+        ptree playerJson, myCardsJson;
+        playerJson.put("username", username);
+        playerJson.put("isMyTurn", isMyTurn);
+
+        for (UNOCard &unoCard:myCards) {
+            ptree unoCardJson;
+            unoCardJson.put("", unoCard.toJson());
+            myCardsJson.push_back(make_pair("", unoCardJson));
+        }
+        playerJson.add_child("myCards", myCardsJson);
+
+        stringstream ss;
+        write_json(ss, playerJson, false);
+        return ss.str();
+    }
 };
 
 

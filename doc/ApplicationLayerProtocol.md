@@ -48,3 +48,4 @@ Content 每行代表一张卡：color,value,type\r\n
 |客户端|服务器|打牌|uno02 playcard username|
 |客户端|服务器|抽牌|uno02 drawcard username|
 |客户端|服务器|说 UNO|uno02 sayuno username|
+|服务器|客户端|抽牌返回|uno02 drawcard|

@@ -8,13 +8,17 @@
 #define UNOSERVER_UNOCARD_H
 
 #include <string>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/foreach.hpp>
 
 using namespace std;
+using namespace boost::property_tree;
 
 class UNOCard {
 private:
     int number; // 每副牌中的编号
-    int cardColor;
+    int color;
     int type;
     int value;
 
@@ -51,11 +55,11 @@ public:
     }
 
     int getCardColor() const {
-        return cardColor;
+        return color;
     }
 
     void setCardColor(int cardColor) {
-        UNOCard::cardColor = cardColor;
+        UNOCard::color = cardColor;
     }
 
     int getType() const {
@@ -75,13 +79,29 @@ public:
     }
 
     /* 构造函数 */
-    UNOCard(int number, int cardColor, int type)
-            : number(number), cardColor(cardColor), type(type), value(0) {
+    UNOCard(int number, int color, int type)
+            : number(number), color(color), type(type), value(0) {
     }
 
-    UNOCard(int number, int cardColor, int type, int value)
-            : number(number), cardColor(cardColor), type(type),
+    UNOCard(int number, int color, int type, int value)
+            : number(number), color(color), type(type),
               value(value) {}
+
+    /**
+     * 返回 UNOCard 的 JSON 表示
+     * @return JSON 形式的字符串
+     */
+    string toJson() {
+        ptree cardJson;
+        cardJson.put("number", number);
+        cardJson.put("color", color);
+        cardJson.put("type", type);
+        cardJson.put("value", value);
+
+        stringstream ss;
+        write_json(ss, cardJson, false);
+        return ss.str();
+    }
 };
 
 #endif //UNOSERVER_UNOCARD_H

@@ -121,4 +121,5 @@ void GameTable::setStatus(int status) {
     GameTable::status = status;
 }
 
+
 #endif //UNOSERVER_GAMETABLE_H
