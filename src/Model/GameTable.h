@@ -36,7 +36,7 @@ public:
 
     const vector<Player *> &getPlayers() const;
 
-    void addPlayer(Player &player);
+    void addPlayer(Player *player);
 
     Player *getPlayer(const string &username);
 
@@ -69,9 +69,9 @@ const vector<Player *> &GameTable::getPlayers() const {
     return players;
 }
 
-void GameTable::addPlayer(Player &player) {
+void GameTable::addPlayer(Player *player) {
     if (players.size() < PLAYERMAX) {
-        players.push_back(&player);
+        players.push_back(player);
     } else {
         printf("GameTable: this table is already full");
     }

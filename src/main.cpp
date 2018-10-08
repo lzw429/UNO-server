@@ -98,6 +98,7 @@ void *handle_call(void *fdptr) {
 //    FILE *fpin;
     char request[BUFSIZ];
     int fd;
+    TimeUtil timeUtil;
 
     fd = *(int *) fdptr;
     free(fdptr); // 由参数获取文件描述符
@@ -120,8 +121,9 @@ void *handle_call(void *fdptr) {
             printf("Receive data failed\n");
             exit(1);
         } else if (len > 0) {
-            printf("Got a call on %d: request = %s", fd, request);
-            process_rq(request, fd); // 处理客户端请求}
+            printf("[%s] Receive from client #%d: request = %s",
+                   timeUtil.getTimeInMillis(timeUtil.getTimeStamp()).c_str(), fd, request);
+            process_rq(request, fd); // 处理客户端请求
         }
     }
 }

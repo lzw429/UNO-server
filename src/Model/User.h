@@ -20,13 +20,30 @@ protected:
     string username; // 用户名
 
 public:
+    /**
+     * 构造方法
+     */
     User() : fd(0), roomNum(0) {}
 
+    /**
+     * 构造方法
+     * @param username 用户名
+     * @param fd 文件描述符
+     */
     User(string username, int fd)
             : username(std::move(username)), fd(fd), roomNum(-1) {
         // 构造方法
     }
 
+    /**
+     * 拷贝构造方法
+     * @param user 被拷贝对象
+     */
+    User(const User &user) :
+            fd(user.fd), roomNum(user.roomNum), username(user.username) {
+    }
+
+    /* getter & setter */
     const string &getUsername() const {
         return username;
     }

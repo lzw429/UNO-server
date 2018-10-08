@@ -22,12 +22,33 @@ private:
     int playedCards; // 已打牌数
 
 public:
-    Player(User user) : User(user) {
+    /**
+     * 构造函数
+     * @param user 用户
+     */
+    Player(User user)
+            : User(user), isMyTurn(false), saidUNO(false), playedCards(0) {
     }
 
+    /**
+     * 构造函数
+     * @param username 用户名
+     */
     Player(string username) : isMyTurn(false),
                               saidUNO(false), playedCards(0) { // 构造方法
         this->username = std::move(username); // 继承
+    }
+
+    /**
+     * 拷贝构造函数
+     * @param player 被拷贝对象
+     */
+    Player(const Player &player)
+            : isMyTurn(player.isMyTurn), saidUNO(player.saidUNO),
+              playedCards(player.playedCards) {
+        for (auto unoCard:player.myCards) {
+            myCards.push_back(unoCard);
+        }
     }
 
     void obtainCard(UNOCard card) {

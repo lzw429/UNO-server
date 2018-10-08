@@ -26,7 +26,8 @@ Content 每行代表一个房间: player1,player2,status\r\n
 |客户端|服务器|进入房间|uno02 enterroom username roomnumber|
 |服务器|客户端|进入房间成功|uno02 enterroom roomnumber 1|
 |服务器|客户端|进入房间失败|uno02 enterroom roomnumber 0|
-|服务器|客户端|房间内玩家|uno02 player playerlist|
+|客户端|服务器|请求房间内玩家|uno02 player roomnumber|
+|服务器|客户端|返回房间内玩家|uno02 player playerlist|
 |客户端|服务器|退出房间|uno02 quitroom username|
 
 playerlist: player1,player2

@@ -23,7 +23,7 @@ public:
     void sendGameTables(int fd); // 发送游戏房间 uno02 hall\r\n\r\nContent
     void enterRoom(string username, string roomNum, int fd); // 进入游戏房间 uno02 enterroom username roomNumber
     void initCardInfo(string username, string roomNum, int fd); // 初始化卡牌信息
-    void sendRoomPlayer(int roomNum, int fd); // 发送房间内玩家信息 uno02 player playerlist
+    void sendRoomPlayer(string roomNum, int fd); // 发送房间内玩家信息 uno02 player playerlist
     void quitRoom(string username, int fd); // 退出游戏房间 uno02 quitroom username
 };
 
@@ -36,6 +36,8 @@ void GameService::process_rq(const vector<string> &request, int fd) {
         enterRoom(request[2], request[3], fd);
     } else if (request[1] == "quitroom") { // 请求退出房间
         quitRoom(request[2], fd);
+    } else if (request[1] == "player") { // 请求房间内玩家
+        sendRoomPlayer(request[2], fd);
     }
 }
 
@@ -76,7 +78,7 @@ void GameService::enterRoom(string username, string roomNum, int fd) {
     User &user = users[username]; // 找到已登录的用户
     // todo 判断是否可进入该房间
     user.setRoomNum(room); // 设置房间号
-    Player player(user);
+    Player *player = new Player(user);
     gameTables[room].addPlayer(player); // 进入房间
 
     // 向客户端返回进入房间成功
@@ -85,8 +87,6 @@ void GameService::enterRoom(string username, string roomNum, int fd) {
     sendMsg(fd, nullptr, msg);
     printf("GameService: user %s has entered room #%s", username.c_str(), roomNum.c_str());
     delete[]msg;
-
-    sendRoomPlayer(room, fd); // 发送房间内玩家信息
 }
 
 /**
@@ -144,12 +144,13 @@ void GameService::initCardInfo(string username, string roomNum, int fd) {
 
 /**
  * 发送指定房间内的玩家列表
- * @param fd 文件描述符
- * @param roomNum 房间号
+ * @param roomNum
+ * @param fd
  */
-void GameService::sendRoomPlayer(int fd, int roomNum) {
+void GameService::sendRoomPlayer(string roomNum, int fd) {
+    int room = stoi(roomNum);
     string msg = "uno02 player ";
-    auto players = gameTables[roomNum].getPlayers();
+    auto players = gameTables[room].getPlayers();
     if (players.size()) {
         for (auto player:players) {
             msg += player->getUsername();

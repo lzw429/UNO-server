@@ -12,10 +12,12 @@
 #define HOSTLEN 256
 #define BACKLOG 1
 
-using namespace std;
-
 #ifndef SOCKLIB_H
 #define SOCKLIB_H
+
+#include"TimeUtil.h"
+
+using namespace std;
 
 // 声明
 int make_server_socket(int portnum);
@@ -90,12 +92,15 @@ int connect_to_server(char *host, int portnum) {
  * @return 发送的字节数
  */
 int sendMsg(int fd, FILE **fpp, const char *msg) {
+    TimeUtil timeUtil;
     string msgStr = msg;
     int len = (int) send(fd, msg, msgStr.size(), 0);
     if (len >= 0) {
-        printf("Server send: %s", msg);
+        printf("[%s] Server send: %s",
+               timeUtil.getTimeInMillis(timeUtil.getTimeStamp()).c_str(), msg);
     } else {
-        printf("Send exception, message: %s\n", msg);
+        printf("[%s] Send exception, message: %s\n",
+               timeUtil.getTimeInMillis(timeUtil.getTimeStamp()).c_str(), msg);
     }
     return len;
 

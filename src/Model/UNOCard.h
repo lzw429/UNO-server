@@ -19,6 +19,7 @@ private:
     int value;
 
 public:
+    /* 常量 */
     // color
     static const int RED = 0;
     static const int BLUE = 1;
@@ -40,7 +41,7 @@ public:
     static const int COLOR_PICKER = 0;
     static const int DRAW4PLUS = 1;
 
-    // getter & setter
+    /* getter & setter */
     int getNumber() const {
         return number;
     }
@@ -73,12 +74,14 @@ public:
         UNOCard::value = value;
     }
 
-    // 构造函数
-    UNOCard(int number, int cardColor, int type) : number(number), cardColor(cardColor), type(type), value(0) {
+    /* 构造函数 */
+    UNOCard(int number, int cardColor, int type)
+            : number(number), cardColor(cardColor), type(type), value(0) {
     }
 
-    UNOCard(int number, int cardColor, int type, int value) : number(number), cardColor(cardColor), type(type),
-                                                              value(value) {}
+    UNOCard(int number, int cardColor, int type, int value)
+            : number(number), cardColor(cardColor), type(type),
+              value(value) {}
 };
 
 #endif //UNOSERVER_UNOCARD_H
