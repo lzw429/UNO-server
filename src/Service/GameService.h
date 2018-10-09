@@ -7,6 +7,7 @@
 #ifndef UNOSERVER_GAMESERVICE_H
 #define UNOSERVER_GAMESERVICE_H
 
+#include <cstdio>
 #include <string>
 #include <vector>
 #include "UserService.h"
@@ -94,7 +95,7 @@ void GameService::enterRoom(string username, string roomNum, int fd) {
     unicast(fd, msg);
     printf("GameService: user %s has entered room #%s", username.c_str(), roomNum.c_str());
     delete[]msg;
-    broadcastRoomStatus(room); // 广播该房间状态
+    broadcastRoomStatus(roomNum); // 广播该房间状态
 }
 
 /**
@@ -124,16 +125,17 @@ void GameService::quitRoom(string username, int fd) {
  */
 void GameService::broadcastRoomStatus(string roomNum) {
     int room = stoi(roomNum);
-    string msg = "uno02 roomstatus " + roomNum + " ";
+    stringstream msg;
+    msg << "uno02 roomstatus " << room << " ";
     auto players = gameTables[room].getPlayers();
     if (players.size()) {
         for (auto player:players) {
-            msg += player->getUsername();
+            msg << player->getUsername() << ",";
         }
     }
-    msg += gameTables[room].getStatus();
-    msg += "\r\n";
-    broadcast(msg.c_str());
+    msg << gameTables[room].getStatus() << "\r\n";
+    string msg_str = msg.str();
+    broadcast(msg_str.c_str());
 }
 
 // todo 退出房间
