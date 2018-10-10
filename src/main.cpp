@@ -1,6 +1,5 @@
 #include <cstdio>
 #include "Util/socklib.h"
-#include "Service/UserService.h"
 #include "Service/GameService.h"
 #include <boost/algorithm/string.hpp>
 #include <csignal>
@@ -24,10 +23,11 @@ void *handle_call(void *fdptr);
 
 void process_rq(char *request, int fd);
 
+void closeSocket(int);
+
 int sock;
 
 int main(int ac, char *av[]) {
-    void closeSocket(int);
     int fd = -1;
     int *fdptr;
     pthread_t worker;
@@ -88,7 +88,7 @@ void setup(pthread_attr_t *attrp) {
 }
 
 /**
- * 处理请求，由多线程执行
+ * 处理请求，由线程执行
  * @param fdptr 文件描述符指针
  * @return
  */
@@ -102,17 +102,6 @@ void *handle_call(void *fdptr) {
 
     fd = *(int *) fdptr;
     free(fdptr); // 由参数获取文件描述符
-
-//    fpin = fdopen(fd, "r"); // 缓冲输入
-//    while (1) {// 读取客户端请求
-//        bzero(request, BUFSIZ);
-//        if ((fgets(request, BUFSIZ, fpin)) > 0) {
-//            printf("Got a call on %d: request = %s", fd, request);
-//            process_rq(request, fd); // 处理客户端请求}
-//        }
-//    }
-//    fclose(fpin);
-//    return nullptr;
 
     while (true) {
         bzero(request, BUFSIZ);
