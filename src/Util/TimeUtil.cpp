@@ -12,7 +12,8 @@ time_t TimeUtil::getTimeStamp() {
     return timestamp;
 }
 
-string TimeUtil::getTimeInMillis(int64 timestamp) {
+string TimeUtil::getTimeInMillis() {
+    auto timestamp = getTimeStamp();
     char *timeInMillis = new char[32];
     int64 milli = timestamp + (int64) 8 * 60 * 60 * 1000;
     // 此处转化为东八区北京时间，如果是其它时区需要按需求修改

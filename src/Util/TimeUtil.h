@@ -19,7 +19,7 @@ class TimeUtil {
 public:
     time_t getTimeStamp();
 
-    string getTimeInMillis(int64 timestamp);
+    string getTimeInMillis();
 };
 
 #endif //UNOSERVER_TIMEUTIL_H

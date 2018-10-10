@@ -9,6 +9,7 @@
 #include <string>
 #include "UNOCard.h"
 #include "GameConstants.h"
+#include "../Util/TimeUtil.h"
 
 using namespace std;
 
@@ -48,6 +49,8 @@ CardDeck::CardDeck() { // 构造函数
             UNOCards.push_back(unoCard);
         }
     }
+    TimeUtil timeUtil;
+    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
     printf("CardDeck: %d cards has been created\n", cardNumber);
 }
 

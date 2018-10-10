@@ -69,12 +69,13 @@ int unicast(int fd, const char *msg) {
     TimeUtil timeUtil;
     string msgStr = msg;
     int len = (int) send(fd, msg, msgStr.size(), 0);
+    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
+
     if (len >= 0) {
-        printf("[%s] Server send to client %d: %s",
-               timeUtil.getTimeInMillis(timeUtil.getTimeStamp()).c_str(), fd, msg);
+        printf("Server send to client #%d, len = %d: %s", len, fd, msg);
     } else {
-        printf("[%s] Send send to client %d exception : %s\n",
-               timeUtil.getTimeInMillis(timeUtil.getTimeStamp()).c_str(), fd, msg);
+        printf("Send send to client #%d exception : %s\n",
+               fd, msg);
     }
     return len;
 }

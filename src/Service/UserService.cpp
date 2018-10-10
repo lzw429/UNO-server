@@ -26,6 +26,8 @@ void UserService::process_rq(const vector<string> &request, int fd) {
  */
 int UserService::login(const string &username, int fd) {
     string msg = "uno01 login " + username;
+    TimeUtil timeUtil;
+    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
     if (users.find(username) != users.end()) { // 该用户已注册
         msg += " 0\r\n";
         printf("UserService: user %s cannot be registered again\n", username.c_str());
