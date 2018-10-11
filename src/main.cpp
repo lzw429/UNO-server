@@ -61,6 +61,7 @@ int main(int ac, char *av[]) {
     printf("UNOServer has started\n");
 
     signal(SIGINT, closeSocket);
+    signal(SIGPIPE, SIG_IGN);
 
     int ret = pthread_create(&worker, &attr, listenClients, nullptr);
     if (ret != 0) {
@@ -83,6 +84,7 @@ int main(int ac, char *av[]) {
         pthread_mutex_unlock(&mutex);
 
         fdSet.push_back(fd);
+        printf("[%s] ", timeUtil.getTimeInMillis().c_str());
         printf("UNOServer: accept client #%d\n", fd);
 
     }
@@ -120,11 +122,11 @@ void *listenClients(void *ptr) {
         // 创建需要监听的文件描述符列表
         maxFd = 5;
         FD_ZERO(&readfds);
-        //  pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&mutex);
         for (int fd:fdSet) {
             FD_SET(fd, &readfds);
         }
-        // pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(&mutex);
 
         // 设置超时值
         timeout.tv_sec = TV_SEC;
@@ -138,13 +140,13 @@ void *listenClients(void *ptr) {
         }
         if (retval > 0) {
             // 对每个文件描述符检查位
-            // pthread_mutex_lock(&mutex);
+            pthread_mutex_lock(&mutex);
             for (int fd:fdSet) {
                 if (FD_ISSET(fd, &readfds)) {
                     process_msg(fd);
                 }
             }
-            // pthread_mutex_unlock(&mutex);
+            pthread_mutex_unlock(&mutex);
         }
     }
 
@@ -153,16 +155,20 @@ void *listenClients(void *ptr) {
 
 void process_msg(int fd) {
     char buf[BUFSIZ];
-    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
-    printf("Receive from client #%d: request = %s", fd, buf);
+    memset(buf, 0, sizeof(buf));
     fflush(stdout);
-    int n = read(fd, buf, BUFSIZ);
+    int n = (int) read(fd, buf, BUFSIZ);
+    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
     if (n == -1) {
         perror("read from socket");
     }
-    write(1, buf, n); // stdout
-    write(1, "\n", 1);
-    process_rq(buf, fd); // 处理客户端请求
+    if (n > 0) {
+        printf("Receive from client #%d: request = %s", fd, buf);
+        process_rq(buf, fd); // 处理客户端请求
+    } else if (n == 0) {
+        // todo 客户端离线
+        printf("Receive from client #%d: disconnect\n", fd);
+    }
 }
 
 /**
