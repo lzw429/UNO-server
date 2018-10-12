@@ -1,12 +1,15 @@
 #include <cstdio>
+#include <queue>
 #include <sys/time.h>
 #include "Util/socklib.h"
+#include "Model/Request.h"
 #include "Service/GameService.h"
 #include <boost/algorithm/string.hpp>
 #include <csignal>
 
 #define TV_SEC 3
 #define TV_USEC 0
+#define FD_SIZ 25
 
 using namespace std;
 using namespace boost;
@@ -17,33 +20,43 @@ int server_bytes_sent;
 int server_requests;
 TimeUtil timeUtil;
 
-
 // 互斥量
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;;
+pthread_mutex_t fdSetMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t requestsMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t requestCome = PTHREAD_COND_INITIALIZER;
 
 // 函数声明
 
 void setup(pthread_attr_t *attrp);
 
-void *listenClients(void *);
+void *listenClientsThread(void *); // 监听客户端的线程
 
 void *handle_call(void *fdptr);
 
 void process_rq(char *request, int fd);
 
+void *processThread(void *); // 处理请求的线程
+
 void closeSocket(int);
 
 void process_msg(int fd);
 
+void threadCreateRet(int); // 线程创建结果处理
+
+int getMaxFd();
+
 int sock;
 
-vector<int> fdSet;
+bitset<FD_SIZ> fdSet; // 文件描述符位图
+queue<Request> requests; // 请求队列
 
 int main(int ac, char *av[]) {
     int fd = -1;
     int *fdptr;
-    pthread_t worker;
+    pthread_t listen; // 监听客户端
+    pthread_t process;  // 处理请求
     pthread_attr_t attr;
+    // todo setup process
 
     if (ac == 1) {
         fprintf(stderr, "usage: UNOServer portnum\n");
@@ -57,17 +70,22 @@ int main(int ac, char *av[]) {
     }
 
     setup(&attr);
+
+    // 初始化统计数据 todo 统计
+    time(&server_started);
+    server_requests = 0;
+    server_bytes_sent = 0;
+
     printf("[%s] ", timeUtil.getTimeInMillis().c_str());
     printf("UNOServer has started\n");
 
-    signal(SIGINT, closeSocket);
+    signal(SIGINT, closeSocket); // 处理信号
     signal(SIGPIPE, SIG_IGN);
 
-    int ret = pthread_create(&worker, &attr, listenClients, nullptr);
-    if (ret != 0) {
-        perror("UNOServer: listening thread create failed");
-        exit(2);
-    }
+    int ret = pthread_create(&listen, &attr, listenClientsThread, nullptr); // 创建监听客户端的线程
+    threadCreateRet(ret);
+    ret = pthread_create(&process, &attr, processThread, nullptr); // 创建处理请求的线程
+    threadCreateRet(ret);
 
     // 主循环，接收请求，以新线程处理请求
 #pragma clang diagnostic push
@@ -79,14 +97,13 @@ int main(int ac, char *av[]) {
             continue;
         }
 
-        pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&fdSetMutex);
         server_requests++;
-        pthread_mutex_unlock(&mutex);
+        fdSet.set(fd);
+        pthread_mutex_unlock(&fdSetMutex);
 
-        fdSet.push_back(fd);
         printf("[%s] ", timeUtil.getTimeInMillis().c_str());
         printf("UNOServer: accept client #%d\n", fd);
-
     }
 #pragma clang diagnostic pop
 }
@@ -96,17 +113,13 @@ int main(int ac, char *av[]) {
 void setup(pthread_attr_t *attrp) {
     pthread_attr_init(attrp);
     pthread_attr_setdetachstate(attrp, PTHREAD_CREATE_DETACHED);
-
-    time(&server_started);
-    server_requests = 0; // todo 统计数据
-    server_bytes_sent = 0;
 }
 
 /**
- * 使用 select 监听客户端
+ * 使用 select 监听客户端的线程
  * @return
  */
-void *listenClients(void *ptr) {
+void *listenClientsThread(void *ptr) {
     fd_set readfds;
     struct timeval timeout;
     int retval; // 从 select 返回
@@ -120,13 +133,14 @@ void *listenClients(void *ptr) {
 
     while (true) {
         // 创建需要监听的文件描述符列表
-        maxFd = 5;
+        pthread_mutex_lock(&fdSetMutex);
+        maxFd = getMaxFd();
         FD_ZERO(&readfds);
-        pthread_mutex_lock(&mutex);
-        for (int fd:fdSet) {
-            FD_SET(fd, &readfds);
+        for (int i = 0; i < FD_SIZ; i++) {
+            if (fdSet.test(i))
+                FD_SET(i, &readfds);
         }
-        pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(&fdSetMutex);
 
         // 设置超时值
         timeout.tv_sec = TV_SEC;
@@ -140,13 +154,13 @@ void *listenClients(void *ptr) {
         }
         if (retval > 0) {
             // 对每个文件描述符检查位
-            pthread_mutex_lock(&mutex);
-            for (int fd:fdSet) {
-                if (FD_ISSET(fd, &readfds)) {
-                    process_msg(fd);
+            pthread_mutex_lock(&fdSetMutex);
+            for (int i = 0; i < FD_SIZ; i++) {
+                if (fdSet.test(i) && FD_ISSET(i, &readfds)) {
+                    process_msg(i);
                 }
             }
-            pthread_mutex_unlock(&mutex);
+            pthread_mutex_unlock(&fdSetMutex);
         }
     }
 
@@ -155,7 +169,7 @@ void *listenClients(void *ptr) {
 
 void process_msg(int fd) {
     char buf[BUFSIZ];
-    memset(buf, 0, sizeof(buf));
+    bzero(buf, BUFSIZ);
     fflush(stdout);
     int n = (int) read(fd, buf, BUFSIZ);
     printf("[%s] ", timeUtil.getTimeInMillis().c_str());
@@ -164,10 +178,39 @@ void process_msg(int fd) {
     }
     if (n > 0) {
         printf("Receive from client #%d: request = %s", fd, buf);
-        process_rq(buf, fd); // 处理客户端请求
+        // 将消息放入队列
+        string content = buf;
+        Request request(content, fd);
+        pthread_mutex_lock(&requestsMutex);
+        requests.push(request);
+        pthread_mutex_unlock(&requestsMutex);
     } else if (n == 0) {
-        // todo 客户端离线
+        // 客户端离线
+        pthread_mutex_lock(&fdSetMutex);
+        server_requests--;
+        fdSet.reset(fd);
+        pthread_mutex_unlock(&fdSetMutex);
+
         printf("Receive from client #%d: disconnect\n", fd);
+    }
+}
+
+/**
+ * 处理请求的线程
+ * @param ptr
+ * @return
+ */
+void *processThread(void *ptr) {
+    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
+    printf("UNOServer: process request thread has started\n");
+    while (true) {
+        // todo 有消息时唤醒
+        pthread_cond_wait(&requestCome, &requestsMutex);
+        if (!requests.empty()) {
+            Request request = requests.front();
+            requests.pop();
+            process_rq(request.getContentChar(), request.getFd()); // 处理客户端请求
+        }
     }
 }
 
@@ -226,4 +269,20 @@ void closeSocket(int signum) {
         printf("Socket shutdown\n");
     }
 #endif
+}
+
+void threadCreateRet(int ret) {
+    if (ret != 0) {
+        perror("UNOServer: listening thread create failed");
+        exit(2);
+    }
+}
+
+int getMaxFd() {
+    pthread_mutex_lock(&fdSetMutex);
+    for (int i = FD_SIZ - 1; i >= 0; --i) {
+        if (fdSet.test(i) == true)
+            return i;
+    }
+    pthread_mutex_unlock(&fdSetMutex);
 }
