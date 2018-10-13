@@ -23,7 +23,7 @@ TimeUtil timeUtil;
 // 互斥量
 pthread_mutex_t fdSetMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t requestsMutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t requestCome = PTHREAD_COND_INITIALIZER;
+pthread_cond_t processStart = PTHREAD_COND_INITIALIZER;
 
 // 函数声明
 
@@ -133,8 +133,9 @@ void *listenClientsThread(void *ptr) {
 
     while (true) {
         // 创建需要监听的文件描述符列表
+
+        maxFd = getMaxFd();    // 该方法中有 lock 与 unlock
         pthread_mutex_lock(&fdSetMutex);
-        maxFd = getMaxFd();
         FD_ZERO(&readfds);
         for (int i = 0; i < FD_SIZ; i++) {
             if (fdSet.test(i))
@@ -184,6 +185,7 @@ void process_msg(int fd) {
         pthread_mutex_lock(&requestsMutex);
         requests.push(request);
         pthread_mutex_unlock(&requestsMutex);
+        pthread_cond_signal(&processStart);       // 告知请求处理线程
     } else if (n == 0) {
         // 客户端离线
         pthread_mutex_lock(&fdSetMutex);
@@ -204,13 +206,15 @@ void *processThread(void *ptr) {
     printf("[%s] ", timeUtil.getTimeInMillis().c_str());
     printf("UNOServer: process request thread has started\n");
     while (true) {
-        // todo 有消息时唤醒
-        pthread_cond_wait(&requestCome, &requestsMutex);
-        if (!requests.empty()) {
+        // 有消息时唤醒
+        pthread_cond_wait(&processStart, &requestsMutex);
+        pthread_mutex_lock(&requestsMutex);
+        while (!requests.empty()) {
             Request request = requests.front();
             requests.pop();
             process_rq(request.getContentChar(), request.getFd()); // 处理客户端请求
         }
+        pthread_mutex_unlock(&requestsMutex);
     }
 }
 
