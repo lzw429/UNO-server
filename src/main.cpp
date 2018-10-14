@@ -45,13 +45,15 @@ void threadCreateRet(int); // 线程创建结果处理
 
 int getMaxFd();
 
+void printTime();
+
 int sock;
 
 bitset<FD_SIZ> fdSet; // 文件描述符位图
 queue<Request> requests; // 请求队列
 
 int main(int ac, char *av[]) {
-    int fd = -1;
+    int fd;
     int *fdptr;
     pthread_t listen; // 监听客户端
     pthread_t process;  // 处理请求
@@ -76,7 +78,7 @@ int main(int ac, char *av[]) {
     server_requests = 0;
     server_bytes_sent = 0;
 
-    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
+    printTime();
     printf("UNOServer has started\n");
 
     signal(SIGINT, closeSocket); // 处理信号
@@ -99,11 +101,12 @@ int main(int ac, char *av[]) {
 
         pthread_mutex_lock(&fdSetMutex);
         server_requests++;
+        printTime();
+        printf("UNOServer: accept client #%d\n", fd);
+        printTime();
+        printf("UNOServer: server request number: %d\n", server_requests);
         fdSet.set(fd);
         pthread_mutex_unlock(&fdSetMutex);
-
-        printf("[%s] ", timeUtil.getTimeInMillis().c_str());
-        printf("UNOServer: accept client #%d\n", fd);
     }
 #pragma clang diagnostic pop
 }
@@ -120,12 +123,12 @@ void setup(pthread_attr_t *attrp) {
  * @return
  */
 void *listenClientsThread(void *ptr) {
-    fd_set readfds;
+    fd_set readFds;
     struct timeval timeout;
-    int retval; // 从 select 返回
+    int retVal; // 从 select 返回
     int maxFd;
 
-    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
+    printTime();
     printf("UNOServer: listening thread has started\n");
 
 #pragma clang diagnostic push
@@ -133,13 +136,12 @@ void *listenClientsThread(void *ptr) {
 
     while (true) {
         // 创建需要监听的文件描述符列表
-
         maxFd = getMaxFd();    // 该方法中有 lock 与 unlock
         pthread_mutex_lock(&fdSetMutex);
-        FD_ZERO(&readfds);
+        FD_ZERO(&readFds);
         for (int i = 0; i < FD_SIZ; i++) {
             if (fdSet.test(i))
-                FD_SET(i, &readfds);
+                FD_SET(i, &readFds);
         }
         pthread_mutex_unlock(&fdSetMutex);
 
@@ -148,16 +150,16 @@ void *listenClientsThread(void *ptr) {
         timeout.tv_usec = TV_USEC;
 
         // 等待输入
-        retval = select(maxFd, &readfds, nullptr, nullptr, &timeout);
-        if (retval == -1) {
+        retVal = select(maxFd, &readFds, nullptr, nullptr, &timeout);
+        if (retVal == -1) {
             perror("select");
             continue;
         }
-        if (retval > 0) {
+        if (retVal > 0) {
             // 对每个文件描述符检查位
             pthread_mutex_lock(&fdSetMutex);
             for (int i = 0; i < FD_SIZ; i++) {
-                if (fdSet.test(i) && FD_ISSET(i, &readfds)) {
+                if (fdSet.test(i) && FD_ISSET(i, &readFds)) {
                     process_msg(i);
                 }
             }
@@ -173,7 +175,7 @@ void process_msg(int fd) {
     bzero(buf, BUFSIZ);
     fflush(stdout);
     int n = (int) read(fd, buf, BUFSIZ);
-    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
+    printTime();
     if (n == -1) {
         perror("read from socket");
     }
@@ -182,17 +184,16 @@ void process_msg(int fd) {
         // 将消息放入队列
         string content = buf;
         Request request(content, fd);
-        pthread_mutex_lock(&requestsMutex);
+        pthread_mutex_lock(&requestsMutex); // 加锁
         requests.push(request);
-        pthread_mutex_unlock(&requestsMutex);
-        pthread_cond_signal(&processStart);       // 告知请求处理线程
+        pthread_cond_signal(&processStart); // 告知请求处理线程
+        pthread_mutex_unlock(&requestsMutex); // 释放
+
     } else if (n == 0) {
         // 客户端离线
-        pthread_mutex_lock(&fdSetMutex);
         server_requests--;
         fdSet.reset(fd);
-        pthread_mutex_unlock(&fdSetMutex);
-
+        printTime();
         printf("Receive from client #%d: disconnect\n", fd);
     }
 }
@@ -203,19 +204,22 @@ void process_msg(int fd) {
  * @return
  */
 void *processThread(void *ptr) {
-    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
+    printTime();
     printf("UNOServer: process request thread has started\n");
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (true) {
-        // 有消息时唤醒
-        pthread_cond_wait(&processStart, &requestsMutex);
-        pthread_mutex_lock(&requestsMutex);
+        pthread_mutex_lock(&requestsMutex); // 加锁
+        pthread_cond_wait(&processStart, &requestsMutex); // 有消息时唤醒
+
         while (!requests.empty()) {
             Request request = requests.front();
             requests.pop();
             process_rq(request.getContentChar(), request.getFd()); // 处理客户端请求
         }
-        pthread_mutex_unlock(&requestsMutex);
+        pthread_mutex_unlock(&requestsMutex); // 释放
     }
+#pragma clang diagnostic pop
 }
 
 /**
@@ -241,7 +245,7 @@ void *handle_call(void *fdptr) {
             printf("Receive data failed\n");
             exit(1);
         } else if (len > 0) {
-            printf("[%s] ", timeUtil.getTimeInMillis().c_str());
+            printTime();
             printf("Receive from client #%d, len = %d: request = %s",
                    fd, (int) len, request);
             process_rq(request, fd); // 处理客户端请求
@@ -270,7 +274,8 @@ void closeSocket(int signum) {
 #ifndef CLOSESOCKET
     if (sock != -1) {
         shutdown(sock, SHUT_RDWR);
-        printf("Socket shutdown\n");
+        printTime();
+        printf("UNOServer: Socket shutdown\n");
     }
 #endif
 }
@@ -283,10 +288,21 @@ void threadCreateRet(int ret) {
 }
 
 int getMaxFd() {
+    int ret = 0;
     pthread_mutex_lock(&fdSetMutex);
     for (int i = FD_SIZ - 1; i >= 0; --i) {
-        if (fdSet.test(i) == true)
-            return i;
+        if (fdSet.test(i)) {
+            ret = i;
+            break;
+        }
     }
     pthread_mutex_unlock(&fdSetMutex);
+    return ret;
+}
+
+/**
+ * 标准输出当前时间，精确到毫秒
+ */
+void printTime() {
+    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
 }
