@@ -3,12 +3,16 @@
 //
 #include "Dealer.h"
 
-stack<UNOCard> Dealer::shuffle() { // 洗牌
-    vector<UNOCard> deck = cardDeck.getUNOCards();
+/**
+  * 洗牌
+  * @return 洗好的一副完整的牌
+  */
+stack<UNOCard> Dealer::shuffle() {
+    vector<UNOCard> deck = cardDeck.getUNOCards(); // 一副完整的牌
     vector<UNOCard> shuffledCards;
 
     while (!deck.empty()) {
-        int totalCards = static_cast<int>(deck.size());
+        int totalCards = (int) (deck.size());
 
         // 获取随机位置
         default_random_engine random;
@@ -25,11 +29,14 @@ stack<UNOCard> Dealer::shuffle() { // 洗牌
     return cardStack;
 }
 
+/**
+  * 发牌者给每位玩家发牌
+  * @param players
+  */
 void Dealer::spreadOut(vector<Player *> &players) {
-    // 给每位玩家发牌
-    for (int i = 1; i <= firstHand; i++) {
+    for (int i = 1; i <= firstHand; i++) { // firstHand 是初始牌数
         for (Player *p:players) {
-            p->obtainCard(cardStack.top());
+            p->obtainCard(cardStack.top()); // 玩家从牌栈里拿一张
             cardStack.pop();
         }
     }

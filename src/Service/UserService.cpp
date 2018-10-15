@@ -51,8 +51,7 @@ void UserService::logout(int fd) {
         if (i->second.getFd() == fd) {
             int room = i->second.getRoomNum();
             auto &gameTables = GameService::getGameTables();
-            GameService::quitRoom(i->second.getUsername(), fd);
-            gameTables[room].removePlayer(i->second.getUsername()); // 退出房间
+            GameService::quitRoom(i->second.getUsername(), fd); // 退出房间
             users.erase(i); // 删除用户
             break;
         }

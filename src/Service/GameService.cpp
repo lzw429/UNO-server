@@ -48,6 +48,7 @@ void GameService::unicastGameTables(int fd) {
 void GameService::enterRoom(string username, string roomNum, int fd) {
     int room = stoi(roomNum);
     char *msg = new char[64];
+    bool start = false;
 
     if (room > gameTables.size() || room < 0) {
         printTime();
@@ -73,11 +74,10 @@ void GameService::enterRoom(string username, string roomNum, int fd) {
     gameTable.addPlayer(player); // 进入房间
 
     // 修改房间状态
-    if (gameTable.getPlayers().size() == GameTable::PLAYERMAX) {
-        // todo 开始游戏
+    if (gameTable.getPlayers().size() == GameTable::PLAYERMAX) { // 开始游戏
         gameTable.setStatus(GameTable::GAMING);
-    } else {
-        // 房间继续等待其他玩家
+        start = true;
+    } else { // 房间继续等待其他玩家
         gameTable.setStatus(GameTable::WAITING);
     }
 
@@ -89,6 +89,8 @@ void GameService::enterRoom(string username, string roomNum, int fd) {
     printf("GameService: user %s has entered room #%s", username.c_str(), roomNum.c_str());
     delete[]msg;
     broadcastRoomStatus(roomNum); // 广播该房间状态
+    if (start)
+        gameStart(room); // 开始游戏对局
 }
 
 /**
@@ -118,7 +120,7 @@ void GameService::quitRoom(string username, int fd) {
         gameTable.setStatus(GameTable::WAITING);
     }
     printTime();
-    printf("GameService: %s has quit room #%d\n", username.c_str(), room);
+    printf("GameService: player %s has quit room #%d\n", username.c_str(), room);
     broadcastRoomStatus(room);
 }
 
@@ -162,4 +164,21 @@ void GameService::broadcastRoomStatus(string roomNum) {
 
 vector<GameTable> &GameService::getGameTables() {
     return gameTables;
+}
+
+/**
+ * 游戏对局开始,以 JSON 传输 GameTable 信息
+ * @param room 房间号
+ */
+void GameService::gameStart(int room) {
+    GameTable &gameTable = gameTables[room];
+    gameTable.gameStart();
+    // 发送消息
+    const vector<Player *> &players = gameTable.getPlayers();
+    for (Player *const player:players) {
+        string playerJson = player->toJson(); // 以 \n 结尾
+        playerJson = playerJson.substr(0, playerJson.size() - 1);
+        string msg = "uno02 gamestart " + playerJson + "\r\n";
+        unicast(player->getFd(), msg.c_str());
+    }
 }

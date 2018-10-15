@@ -127,5 +127,4 @@ public:
     }
 };
 
-
 #endif //UNOSERVER_PLAYER_H

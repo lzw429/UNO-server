@@ -8,10 +8,16 @@ long long int power(long long int a, long long int b, long long int P) {
     return ((long long int) pow(a, b) % P);
 }
 
-long long int randomNumber() {
+long long int randomNumber(long long limit) {
     random_device rd;
     mt19937 gen(rd());
-    uniform_real_distribution<> dis(1, LONG_LONG_MAX);
+    uniform_real_distribution<> dis(1, limit);
     return (long long) (dis(gen));
 }
 
+int randomNumber(int limit) {
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dis(1, limit);
+    return (dis(gen));
+}

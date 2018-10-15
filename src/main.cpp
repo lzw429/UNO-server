@@ -7,9 +7,9 @@
 #include <boost/algorithm/string.hpp>
 #include <csignal>
 
-#define TV_SEC 3
-#define TV_USEC 0
-#define FD_SIZ 25
+#define TV_SEC 3 // timeval 秒数
+#define TV_USEC 0 // timeval 毫秒数
+#define FD_SIZ 25 // size of fd set
 
 using namespace std;
 using namespace boost;

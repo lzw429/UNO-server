@@ -9,6 +9,7 @@
 #include "Player.h"
 #include "CardDeck.h"
 #include "Dealer.h"
+#include "../Util/InfoSecurity.h"
 
 using namespace std;
 
@@ -51,6 +52,8 @@ public:
     int getStatus() const;
 
     void setStatus(int status);
+
+    void gameStart();
 };
 
 #endif //UNOSERVER_GAMETABLE_H

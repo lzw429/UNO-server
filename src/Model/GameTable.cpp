@@ -3,7 +3,6 @@
 //
 #include "GameTable.h"
 
-
 // 静态变量
 // status 常量
 const int GameTable::IDLE = 0;
@@ -15,10 +14,6 @@ const int GameTable::ONLINE = 2;
 const int GameTable::PLAYERMAX = 2;
 
 GameTable::GameTable() : status(IDLE), mode(-1) {
-    // players.resize((unsigned long) PLAYERMAX);
-
-    // todo  this->cardStack = dealer.shuffle();
-    // todo  dealer.spreadOut(players);
 }
 
 const vector<Player *> &GameTable::getPlayers() const {
@@ -80,4 +75,17 @@ int GameTable::getStatus() const {
 
 void GameTable::setStatus(int status) {
     this->status = status;
+}
+
+/**
+ * 设定出牌顺序
+ * 向玩家发牌
+ */
+void GameTable::gameStart() {
+    // 设定出牌顺序
+    int firstPlayer = (randomNumber(GameTable::PLAYERMAX));
+    players[firstPlayer]->setIsMyTurn(true);
+    // 从牌桌向玩家发牌
+    this->cardStack = dealer.shuffle();
+    dealer.spreadOut(players);
 }
