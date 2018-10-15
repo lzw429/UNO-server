@@ -15,11 +15,10 @@
 using namespace std;
 using namespace chrono;
 
-class TimeUtil {
-public:
-    time_t getTimeStamp();
+time_t getTimeStamp();
 
-    string getTimeInMillis();
-};
+string getTimeInMillis();
+
+void printTime();
 
 #endif //UNOSERVER_TIMEUTIL_H

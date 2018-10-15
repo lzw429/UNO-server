@@ -19,44 +19,11 @@ private:
     stack<UNOCard> cardStack;
 
 public:
-    stack<UNOCard> shuffle() { // 洗牌
-        vector<UNOCard> deck = cardDeck.getUNOCards();
-        vector<UNOCard> shuffledCards;
+    stack<UNOCard> shuffle();
 
-        while (!deck.empty()) {
-            int totalCards = static_cast<int>(deck.size());
+    void spreadOut(vector<Player *> &players);
 
-            // 获取随机位置
-            default_random_engine random;
-            int pos = static_cast<int>(random()) % totalCards;
-
-            UNOCard randomCard = deck[pos];
-            deck.erase(deck.begin() + pos);
-            shuffledCards.push_back(randomCard);
-        }
-
-        for (const UNOCard &card:shuffledCards) {
-            cardStack.push(card);
-        }
-        return cardStack;
-    }
-
-    void spreadOut(vector<Player *> &players) {
-        // 给每位玩家发牌
-        for (int i = 1; i <= firstHand; i++) {
-            for (Player *p:players) {
-                p->obtainCard(cardStack.top());
-                cardStack.pop();
-            }
-        }
-    }
-
-    const UNOCard getACard() {
-        const UNOCard ret = cardStack.top();
-        cardStack.pop();
-        return ret;
-    }
+    const UNOCard getACard();
 };
-
 
 #endif //UNOSERVER_DEALER_H

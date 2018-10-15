@@ -4,7 +4,7 @@
 
 #include "TimeUtil.h"
 
-time_t TimeUtil::getTimeStamp() {
+time_t getTimeStamp() {
     time_point<system_clock, milliseconds> tp = time_point_cast<milliseconds>(
             system_clock::now());
     auto tmp = duration_cast<milliseconds>(tp.time_since_epoch());
@@ -12,7 +12,7 @@ time_t TimeUtil::getTimeStamp() {
     return timestamp;
 }
 
-string TimeUtil::getTimeInMillis() {
+string getTimeInMillis() {
     auto timestamp = getTimeStamp();
     char *timeInMillis = new char[32];
     int64 milli = timestamp + (int64) 8 * 60 * 60 * 1000;
@@ -28,4 +28,11 @@ string TimeUtil::getTimeInMillis() {
     string res = timeInMillis;
     delete[] timeInMillis;
     return res;
+}
+
+/**
+ * 标准输出当前时间，精确到毫秒
+ */
+void printTime() {
+    printf("[%s] ", getTimeInMillis().c_str());
 }

@@ -22,17 +22,17 @@ private:
 
 public:
     // status 常量
-    const int IDLE = 0;
-    const int WAITING = 1;
-    const int GAMING = 2;
+    static const int IDLE;
+    static const int WAITING;
+    static const int GAMING;
 
     // mode 常量
-    const int ONLINE = 2;
-    const int PLAYERMAX = 2;
+    static const int ONLINE;
+    static const int PLAYERMAX;
 
     GameTable();
 
-    explicit GameTable(int mode);
+    explicit GameTable(int mode); // todo 构造函数
 
     const vector<Player *> &getPlayers() const;
 
@@ -52,74 +52,5 @@ public:
 
     void setStatus(int status);
 };
-
-GameTable::GameTable() : status(0), mode(-1) {
-
-}
-
-GameTable::GameTable(int mode) : mode(mode) { // 构造方法
-    this->mode = mode;
-    this->status = IDLE;
-    this->cardStack = dealer.shuffle();
-    dealer.spreadOut(players);
-    players.resize((unsigned long) PLAYERMAX);
-}
-
-const vector<Player *> &GameTable::getPlayers() const {
-    return players;
-}
-
-void GameTable::addPlayer(Player *player) {
-    if (players.size() < PLAYERMAX) {
-        players.push_back(player);
-    } else {
-        printf("GameTable: this table is already full");
-    }
-}
-
-string GameTable::getPlayerName(int i) {
-    if (i >= players.size())
-        return "";
-    return players[i]->getUsername();
-}
-
-Player *GameTable::getPlayer(const string &username) {
-    for (auto player:players) {
-        if (player->getUsername() == username)
-            return player;
-    }
-    return nullptr;
-}
-
-Player *GameTable::getPlayer(int i) {
-    if (i >= players.size())
-        return nullptr;
-    return *(players.begin() + i);
-}
-
-void GameTable::removePlayer(const string &username) {
-    for (auto i = players.begin(); i != players.end(); i++) {
-        if ((*i)->getUsername() == username) {
-            players.erase(i);
-        }
-    }
-}
-
-void GameTable::removePlayer(const Player *player) {
-    for (auto i = players.begin(); i != players.end(); i++) {
-        if ((*i) == player) {
-            players.erase(i);
-        }
-    }
-}
-
-int GameTable::getStatus() const {
-    return status;
-}
-
-void GameTable::setStatus(int status) {
-    GameTable::status = status;
-}
-
 
 #endif //UNOSERVER_GAMETABLE_H

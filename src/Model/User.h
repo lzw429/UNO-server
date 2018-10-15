@@ -23,7 +23,7 @@ public:
     /**
      * 构造方法
      */
-    User() : fd(0), roomNum(0) {}
+    User() : fd(0), roomNum(-1) {}
 
     /**
      * 构造方法
@@ -46,6 +46,10 @@ public:
     /* getter & setter */
     const string &getUsername() const {
         return username;
+    }
+
+    static const string getUsername(User &user) {
+        return user.getUsername();
     }
 
     void setUsername(const string &username) {

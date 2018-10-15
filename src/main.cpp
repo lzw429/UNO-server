@@ -18,7 +18,6 @@ time_t server_started;
 
 int server_bytes_sent;
 int server_requests;
-TimeUtil timeUtil;
 
 // 互斥量
 pthread_mutex_t fdSetMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -44,8 +43,6 @@ void process_msg(int fd);
 void threadCreateRet(int); // 线程创建结果处理
 
 int getMaxFd();
-
-void printTime();
 
 int sock;
 
@@ -79,7 +76,7 @@ int main(int ac, char *av[]) {
     server_bytes_sent = 0;
 
     printTime();
-    printf("UNOServer has started\n");
+    printf("UNOServer: main thread has started\n");
 
     signal(SIGINT, closeSocket); // 处理信号
     signal(SIGPIPE, SIG_IGN);
@@ -125,8 +122,12 @@ void setup(pthread_attr_t *attrp) {
 void *listenClientsThread(void *ptr) {
     fd_set readFds;
     struct timeval timeout;
+    // 设置超时值
+    timeout.tv_sec = TV_SEC;
+    timeout.tv_usec = TV_USEC;
+
     int retVal; // 从 select 返回
-    int maxFd;
+    int maxFd = 0;
 
     printTime();
     printf("UNOServer: listening thread has started\n");
@@ -139,18 +140,14 @@ void *listenClientsThread(void *ptr) {
         maxFd = getMaxFd();    // 该方法中有 lock 与 unlock
         pthread_mutex_lock(&fdSetMutex);
         FD_ZERO(&readFds);
-        for (int i = 0; i < FD_SIZ; i++) {
+        for (int i = 0; i < maxFd + 1; i++) {
             if (fdSet.test(i))
                 FD_SET(i, &readFds);
         }
         pthread_mutex_unlock(&fdSetMutex);
 
-        // 设置超时值
-        timeout.tv_sec = TV_SEC;
-        timeout.tv_usec = TV_USEC;
-
         // 等待输入
-        retVal = select(maxFd, &readFds, nullptr, nullptr, &timeout);
+        retVal = select(maxFd + 1, &readFds, nullptr, nullptr, &timeout);
         if (retVal == -1) {
             perror("select");
             continue;
@@ -175,11 +172,13 @@ void process_msg(int fd) {
     bzero(buf, BUFSIZ);
     fflush(stdout);
     int n = (int) read(fd, buf, BUFSIZ);
-    printTime();
+
     if (n == -1) {
+        printTime();
         perror("read from socket");
     }
     if (n > 0) {
+        printTime();
         printf("Receive from client #%d: request = %s", fd, buf);
         // 将消息放入队列
         string content = buf;
@@ -188,11 +187,12 @@ void process_msg(int fd) {
         requests.push(request);
         pthread_cond_signal(&processStart); // 告知请求处理线程
         pthread_mutex_unlock(&requestsMutex); // 释放
-
     } else if (n == 0) {
-        // 客户端离线
+        // 客户端离线, fdSetMutex 已加锁
         server_requests--;
+        UserService::logout(fd);
         fdSet.reset(fd);
+        close(fd);
         printTime();
         printf("Receive from client #%d: disconnect\n", fd);
     }
@@ -210,8 +210,8 @@ void *processThread(void *ptr) {
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (true) {
         pthread_mutex_lock(&requestsMutex); // 加锁
-        pthread_cond_wait(&processStart, &requestsMutex); // 有消息时唤醒
-
+        while (requests.empty())
+            pthread_cond_wait(&processStart, &requestsMutex); // 有消息时唤醒
         while (!requests.empty()) {
             Request request = requests.front();
             requests.pop();
@@ -222,49 +222,16 @@ void *processThread(void *ptr) {
 #pragma clang diagnostic pop
 }
 
-/**
- * 处理请求，由线程执行
- * @param fdptr 文件描述符指针
- * @return
- */
-void *handle_call(void *fdptr) {
-    // TODO 处理完成后销毁线程?
-    // TODO 客户端退出后关闭 socket
-//    FILE *fpin;
-    char request[BUFSIZ];
-    int fd;
-    TimeUtil timeUtil;
-
-    fd = *(int *) fdptr;
-    free(fdptr); // 由参数获取文件描述符
-
-    while (true) {
-        bzero(request, BUFSIZ);
-        ssize_t len = recv(fd, request, BUFSIZ, 0);
-        if (len < 0) {
-            printf("Receive data failed\n");
-            exit(1);
-        } else if (len > 0) {
-            printTime();
-            printf("Receive from client #%d, len = %d: request = %s",
-                   fd, (int) len, request);
-            process_rq(request, fd); // 处理客户端请求
-        }
-    }
-}
-
 void process_rq(char *request, int fd) {
     if (strcmp(request, "") == 0)
         return;
-    UserService userService;
-    GameService gameService;
     vector<string> splitStr;
     string rq_str = request;
     split(splitStr, rq_str, boost::is_any_of(" "));
     if (splitStr[0] == "uno01")
-        userService.process_rq(splitStr, fd);
+        UserService::process_rq(splitStr, fd);
     else if (splitStr[0] == "uno02")
-        gameService.process_rq(splitStr, fd);
+        GameService::process_rq(splitStr, fd);
     else {
         throw "process_rq: request split exception";
     }
@@ -300,9 +267,3 @@ int getMaxFd() {
     return ret;
 }
 
-/**
- * 标准输出当前时间，精确到毫秒
- */
-void printTime() {
-    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
-}

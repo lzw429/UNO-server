@@ -66,14 +66,15 @@ int connect_to_server(char *host, int portnum) {
  * @return 发送的字节数
  */
 int unicast(int fd, const char *msg) {
-    TimeUtil timeUtil;
     string msgStr = msg;
-    int len = (int) send(fd, msg, msgStr.size(), 0);
-    printf("[%s] ", timeUtil.getTimeInMillis().c_str());
+    msgStr += "\f";
+    int len = (int) send(fd, msgStr.c_str(), msgStr.size(), 0);
 
     if (len >= 0) {
-        printf("Server send to client #%d, len = %d: %s", len, fd, msg);
+        printTime();
+        printf("Server send to client #%d, len = %d: %s", fd, len, msg);
     } else {
+        printTime();
         printf("Send send to client #%d exception : %s\n",
                fd, msg);
     }
@@ -90,7 +91,6 @@ int broadcast(const char *msg) {
     auto users = userService.getUsers();
     int len = 0;
     string msgStr = msg;
-
     for (auto item:users) {
         int fd = item.second.getFd();
         len += unicast(fd, msg);
