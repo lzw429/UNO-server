@@ -7,7 +7,7 @@ add_executable(UNOServer src/main.cpp src/Util/socklib.h src/Util/socklib.cpp sr
         src/Model/CardDeck.h src/Model/GameConstants.h
         src/Service/UserService.h src/Service/GameService.h
         src/Model/GameTable.h src/Model/Player.h src/Model/Dealer.h
-        src/Util/TimeUtil.h src/Service/UserService.cpp src/Util/TimeUtil.cpp src/Model/Request.h src/Service/GameService.cpp src/Model/GameTable.cpp src/Model/CardDeck.cpp src/Model/Dealer.cpp src/Util/InfoSecurity.h src/Util/InfoSecurity.cpp)
+        src/Util/TimeUtil.h src/Service/UserService.cpp src/Util/TimeUtil.cpp src/Model/Request.h src/Service/GameService.cpp src/Model/GameTable.cpp src/Model/CardDeck.cpp src/Model/Dealer.cpp src/Util/InfoSecurity.h src/Util/InfoSecurity.cpp src/Model/UNOCard.cpp)
 
 find_package(Threads)
 find_package(Boost)

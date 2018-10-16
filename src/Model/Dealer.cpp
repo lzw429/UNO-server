@@ -42,8 +42,8 @@ void Dealer::spreadOut(vector<Player *> &players) {
     }
 }
 
-const UNOCard Dealer::getACard() {
-    const UNOCard ret = cardStack.top();
-    cardStack.pop();
+UNOCard Dealer::getACard() {
+    UNOCard ret = this->cardStack.top();
+    this->cardStack.pop();
     return ret;
 }

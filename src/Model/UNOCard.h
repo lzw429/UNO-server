@@ -91,17 +91,10 @@ public:
      * 返回 UNOCard 的 JSON 表示
      * @return JSON 形式的字符串
      */
-    string toJson() {
-        ptree cardJson;
-        cardJson.put("number", number);
-        cardJson.put("color", color);
-        cardJson.put("type", type);
-        cardJson.put("value", value);
+    ptree toJsonElement();
 
-        stringstream ss;
-        write_json(ss, cardJson, false);
-        return ss.str();
-    }
+    string toJson();
 };
+
 
 #endif //UNOSERVER_UNOCARD_H

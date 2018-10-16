@@ -62,7 +62,7 @@ public:
     }
 
     void setIsMyTurn(bool isMyTurn) {
-        Player::isMyTurn = isMyTurn;
+        this->isMyTurn = isMyTurn;
     }
 
     bool isSaidUNO() const {
@@ -70,7 +70,7 @@ public:
     }
 
     void setSaidUNO(bool saidUNO) {
-        Player::saidUNO = saidUNO;
+        this->saidUNO = saidUNO;
     }
 
     const vector<UNOCard> &getMyCards() const {
@@ -78,7 +78,7 @@ public:
     }
 
     void setMyCards(const vector<UNOCard> &myCards) {
-        Player::myCards = myCards;
+        this->myCards = myCards;
     }
 
     int getPlayedCards() const {
@@ -86,7 +86,7 @@ public:
     }
 
     void setPlayedCards(int playedCards) {
-        Player::playedCards = playedCards;
+        this->playedCards = playedCards;
     }
 
     /**
@@ -115,9 +115,8 @@ public:
         playerJson.put("isMyTurn", isMyTurn);
 
         for (UNOCard &unoCard:myCards) {
-            ptree unoCardJson;
-            unoCardJson.put("", unoCard.toJson());
-            myCardsJson.push_back(make_pair("", unoCardJson));
+            ptree unoCardJson = unoCard.toJsonElement();
+            myCardsJson.push_back(make_pair("", unoCardJson)); // JSON 数组
         }
         playerJson.add_child("myCards", myCardsJson);
 

@@ -23,7 +23,7 @@ public:
 
     void spreadOut(vector<Player *> &players);
 
-    const UNOCard getACard();
+    UNOCard getACard();
 };
 
 #endif //UNOSERVER_DEALER_H

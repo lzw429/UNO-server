@@ -54,6 +54,11 @@ public:
     void setStatus(int status);
 
     void gameStart();
+
+    Dealer &getDealer();
+
+    const stack<UNOCard> &getCardStack() const;
+
 };
 
 #endif //UNOSERVER_GAMETABLE_H

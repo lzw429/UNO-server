@@ -16,7 +16,7 @@
 
 using namespace std;
 
-class GameService {
+class GameService : public GameConstants {
 private:
     static vector<GameTable> gameTables;
 public:

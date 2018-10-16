@@ -104,7 +104,7 @@ void GameService::quitRoom(string username, int fd) {
 
     if (user_i == users.end()) {
         printTime();
-        printf("GameService: this user does not exist");
+        printf("GameService: user %s (client #%d) does not exist", username.c_str(), fd);
         return;
     }
     User &user = users[username];
@@ -120,7 +120,7 @@ void GameService::quitRoom(string username, int fd) {
         gameTable.setStatus(GameTable::WAITING);
     }
     printTime();
-    printf("GameService: player %s has quit room #%d\n", username.c_str(), room);
+    printf("GameService: player %s (client #%d) has quit room #%d\n", username.c_str(), fd, room);
     broadcastRoomStatus(room);
 }
 
@@ -173,12 +173,26 @@ vector<GameTable> &GameService::getGameTables() {
 void GameService::gameStart(int room) {
     GameTable &gameTable = gameTables[room];
     gameTable.gameStart();
-    // 发送消息
+
+    // 生成消息中的 JSON
     const vector<Player *> &players = gameTable.getPlayers();
-    for (Player *const player:players) {
-        string playerJson = player->toJson(); // 以 \n 结尾
+    string playersJson;
+    for (Player *const roomPlayer:players) {
+        string playerJson = roomPlayer->toJson(); // 以 \n 结尾
         playerJson = playerJson.substr(0, playerJson.size() - 1);
-        string msg = "uno02 gamestart " + playerJson + "\r\n";
-        unicast(player->getFd(), msg.c_str());
+        playersJson += playerJson + " "; // 玩家之间以空格分隔
     }
+    playersJson = playersJson.substr(0, playersJson.size() - 1); // 删除最后的空格
+    string firstCardJson = gameTable.getDealer().getACard().toJson(); // 以 \n 结尾
+    firstCardJson = firstCardJson.substr(0, firstCardJson.size() - 1);
+    int remainCardNum = (int) (gameTable.getCardStack().size()); // 剩余牌数 默认：108 - 2 * 8 - 1
+
+    // 发送消息
+    char *msg = new char[BUFSIZ]; // 该消息可能较长
+    sprintf(msg, "uno02 gamestart %d %s %s\r\n", remainCardNum, firstCardJson.c_str(), playersJson.c_str());
+    for (Player *const roomReceiver:players) {
+        // 向房间内所有玩家发送房间内各玩家信息
+        unicast(roomReceiver->getFd(), msg);
+    }
+    delete[] msg;
 }

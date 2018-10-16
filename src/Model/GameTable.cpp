@@ -77,13 +77,21 @@ void GameTable::setStatus(int status) {
     this->status = status;
 }
 
+Dealer &GameTable::getDealer() {
+    return dealer;
+}
+
+const stack<UNOCard> &GameTable::getCardStack() const {
+    return cardStack;
+}
+
 /**
  * 设定出牌顺序
  * 向玩家发牌
  */
 void GameTable::gameStart() {
     // 设定出牌顺序
-    int firstPlayer = (randomNumber(GameTable::PLAYERMAX));
+    int firstPlayer = (randomNumber(GameTable::PLAYERMAX - 1));
     players[firstPlayer]->setIsMyTurn(true);
     // 从牌桌向玩家发牌
     this->cardStack = dealer.shuffle();

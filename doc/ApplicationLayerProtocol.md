@@ -33,7 +33,7 @@ Content 每行代表一个房间: player1,player2,status\r\n
 
 |发送方|接受方|含义|内容|
 |---|---|---|---|
-|服务器|客户端|初始化对局信息|uno02 gamestart PlayerJson|
+|服务器|客户端|初始化对局信息|uno02 gamestart remainCardNum topCardJson playerJson|
 |服务器|客户端|||
 
 
