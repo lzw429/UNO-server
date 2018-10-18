@@ -116,6 +116,8 @@ void GameService::quitRoom(string username, int fd) {
     // 修改房间状态
     if (gameTable.getPlayers().empty()) { // 房间为空闲
         gameTable.setStatus(GameTable::IDLE);
+        // todo 重置房间内的牌
+
     } else { // 房间继续等待其他玩家
         gameTable.setStatus(GameTable::WAITING);
     }
@@ -185,7 +187,7 @@ void GameService::gameStart(int room) {
     playersJson = playersJson.substr(0, playersJson.size() - 1); // 删除最后的空格
     string firstCardJson = gameTable.getDealer().getACard().toJson(); // 以 \n 结尾
     firstCardJson = firstCardJson.substr(0, firstCardJson.size() - 1);
-    int remainCardNum = (int) (gameTable.getCardStack().size()); // 剩余牌数 默认：108 - 2 * 8 - 1
+    int remainCardNum = (int) (gameTable.getDealer().getCardStack().size()); // 剩余牌数 默认：108 - 2 * 8 - 1
 
     // 发送消息
     char *msg = new char[BUFSIZ]; // 该消息可能较长

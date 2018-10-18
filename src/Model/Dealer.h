@@ -24,6 +24,10 @@ public:
     void spreadOut(vector<Player *> &players);
 
     UNOCard getACard();
+
+    const stack<UNOCard> &getCardStack() const;
+
+    void clearCardStack();
 };
 
 #endif //UNOSERVER_DEALER_H

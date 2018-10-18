@@ -5,7 +5,6 @@
 #include "Model/Request.h"
 #include "Service/GameService.h"
 #include <boost/algorithm/string.hpp>
-#include <csignal>
 
 #define TV_SEC 3 // timeval 秒数
 #define TV_USEC 0 // timeval 毫秒数
@@ -85,6 +84,7 @@ int main(int ac, char *av[]) {
     threadCreateRet(ret);
     ret = pthread_create(&process, &attr, processThread, nullptr); // 创建处理请求的线程
     threadCreateRet(ret);
+
 
     // 主循环，接收请求，以新线程处理请求
 #pragma clang diagnostic push

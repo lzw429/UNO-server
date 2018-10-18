@@ -7,6 +7,11 @@
  * 构造函数
  */
 CardDeck::CardDeck() {
+    shuffle();
+}
+
+vector<UNOCard> CardDeck::shuffle() {
+    UNOCards.clear();
     int cardNumber = 0;
     for (int color:UNO_COLORS) {
         // 创建 76 张数字牌，除了 0 每个数字 2 张
@@ -23,6 +28,7 @@ CardDeck::CardDeck() {
         for (int type: actionTypes) {
             for (int i = 0; i < 2; i++) {
                 UNOCard unoCard(cardNumber++, color, UNOCard::ACTION, type);
+                UNOCards.push_back(unoCard);
             }
         }
     }
@@ -35,6 +41,7 @@ CardDeck::CardDeck() {
     }
     printTime();
     printf("CardDeck: %d cards has been created\n", cardNumber);
+    return UNOCards;
 }
 
 const vector<UNOCard> &CardDeck::getUNOCards() const {

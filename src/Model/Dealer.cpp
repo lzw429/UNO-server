@@ -8,7 +8,7 @@
   * @return 洗好的一副完整的牌
   */
 stack<UNOCard> Dealer::shuffle() {
-    vector<UNOCard> deck = cardDeck.getUNOCards(); // 一副完整的牌
+    vector<UNOCard> deck = cardDeck.shuffle(); // 一副完整的牌
     vector<UNOCard> shuffledCards;
 
     while (!deck.empty()) {
@@ -23,10 +23,11 @@ stack<UNOCard> Dealer::shuffle() {
         shuffledCards.push_back(randomCard);
     }
 
+    clearCardStack();
     for (const UNOCard &card:shuffledCards) {
-        cardStack.push(card);
+        this->cardStack.push(card);
     }
-    return cardStack;
+    return this->cardStack;
 }
 
 /**
@@ -46,4 +47,14 @@ UNOCard Dealer::getACard() {
     UNOCard ret = this->cardStack.top();
     this->cardStack.pop();
     return ret;
+}
+
+const stack<UNOCard> &Dealer::getCardStack() const {
+    return cardStack;
+}
+
+void Dealer::clearCardStack() {
+    while (!cardStack.empty()) {
+        cardStack.pop();
+    }
 }

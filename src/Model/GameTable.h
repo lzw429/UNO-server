@@ -18,7 +18,6 @@ private:
     vector<Player *> players;   // 玩家
     int status;                 // 状态
     int mode;                   // 模式
-    stack<UNOCard> cardStack;   // 牌栈
     Dealer dealer;              // 发牌者
 
 public:
@@ -58,7 +57,6 @@ public:
     Dealer &getDealer();
 
     const stack<UNOCard> &getCardStack() const;
-
 };
 
 #endif //UNOSERVER_GAMETABLE_H

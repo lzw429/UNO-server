@@ -19,6 +19,8 @@ private:
 public:
     const vector<UNOCard> &getUNOCards() const;
 
+    vector<UNOCard> shuffle();
+
     CardDeck(); // 构造函数
 };
 

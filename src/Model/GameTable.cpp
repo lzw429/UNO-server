@@ -81,19 +81,18 @@ Dealer &GameTable::getDealer() {
     return dealer;
 }
 
-const stack<UNOCard> &GameTable::getCardStack() const {
-    return cardStack;
-}
-
 /**
  * 设定出牌顺序
  * 向玩家发牌
  */
 void GameTable::gameStart() {
+    if (status != GAMING)
+        return;
+
     // 设定出牌顺序
     int firstPlayer = (randomNumber(GameTable::PLAYERMAX - 1));
     players[firstPlayer]->setIsMyTurn(true);
     // 从牌桌向玩家发牌
-    this->cardStack = dealer.shuffle();
+    dealer.shuffle();
     dealer.spreadOut(players);
 }
