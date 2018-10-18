@@ -93,15 +93,12 @@ public:
        * 获取一张牌
        * @param card 来自发牌者的牌
        */
-    void obtainCard(UNOCard card) {
+    UNOCard obtainOneCard(UNOCard card) {
         myCards.push_back(card);
+        return card;
     }
 
     void playCard(int cardNumber) {
-        // todo
-    }
-
-    void drawCard() {
         // todo
     }
 

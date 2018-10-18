@@ -2,7 +2,6 @@
 // Created by syh on 10/14/18.
 //
 #include "GameService.h"
-
 // 静态变量声明
 
 vector<GameTable> GameService::gameTables(10); // static
@@ -16,6 +15,8 @@ void GameService::process_rq(const vector<string> &request, int fd) {
         enterRoom(request[2], request[3], fd);
     } else if (request[1] == "quitroom") { // 请求退出房间
         quitRoom(request[2], fd);
+    } else if (request[1] == "drawcard") { // 请求抽牌
+        drawCard(request[2], request[3]);
     }
 }
 
@@ -185,16 +186,35 @@ void GameService::gameStart(int room) {
         playersJson += playerJson + " "; // 玩家之间以空格分隔
     }
     playersJson = playersJson.substr(0, playersJson.size() - 1); // 删除最后的空格
-    string firstCardJson = gameTable.getDealer().getACard().toJson(); // 以 \n 结尾
+    string firstCardJson = gameTable.getDealer().giveOneCard().toJson(); // 以 \n 结尾
     firstCardJson = firstCardJson.substr(0, firstCardJson.size() - 1);
     int remainCardNum = (int) (gameTable.getDealer().getCardStack().size()); // 剩余牌数 默认：108 - 2 * 8 - 1
 
     // 发送消息
     char *msg = new char[BUFSIZ]; // 该消息可能较长
     sprintf(msg, "uno02 gamestart %d %s %s\r\n", remainCardNum, firstCardJson.c_str(), playersJson.c_str());
-    for (Player *const roomReceiver:players) {
-        // 向房间内所有玩家发送房间内各玩家信息
-        unicast(roomReceiver->getFd(), msg);
-    }
+
+    multicast(players, msg);
     delete[] msg;
+}
+
+
+void GameService::drawCard(string username, string roomNum) {
+    int room = stoi(roomNum);
+    GameTable &gameTable = gameTables[room];
+    const vector<Player *> &players = gameTable.getPlayers();
+
+    if (gameTable.getStatus() != GameTable::GAMING)
+        return;
+    UNOCard unoCard = gameTable.drawCard(username); // 将牌返回给房间内所有客户
+    string nextPlayerName = gameTable.nextTurn(username); // 调整出牌顺序
+
+    // 返回消息
+    char *msg = new char[1024];
+    string unoCardJson = unoCard.toJson();
+    sprintf(msg, "uno02 draw %s %s", username.c_str(), unoCardJson.c_str());
+
+    sprintf(msg, "uno02 turn %s\r\n", nextPlayerName.c_str());
+    multicast(players, msg);
+    delete[]msg;
 }

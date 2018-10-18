@@ -37,20 +37,20 @@ stack<UNOCard> Dealer::shuffle() {
 void Dealer::spreadOut(vector<Player *> &players) {
     for (int i = 1; i <= firstHand; i++) { // firstHand 是初始牌数
         for (Player *p:players) {
-            p->obtainCard(cardStack.top()); // 玩家从牌栈里拿一张
+            p->obtainOneCard(cardStack.top()); // 玩家从牌栈里拿一张
             cardStack.pop();
         }
     }
 }
 
-UNOCard Dealer::getACard() {
+UNOCard Dealer::giveOneCard() {
     UNOCard ret = this->cardStack.top();
     this->cardStack.pop();
     return ret;
 }
 
 const stack<UNOCard> &Dealer::getCardStack() const {
-    return cardStack;
+    return this->cardStack;
 }
 
 void Dealer::clearCardStack() {

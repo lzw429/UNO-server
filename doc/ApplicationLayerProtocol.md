@@ -36,12 +36,12 @@ Content 每行代表一个房间: player1,player2,status\r\n
 |服务器|客户端|初始化对局信息|uno02 gamestart remainCardNum topCardJson playerJson|
 |服务器|客户端|||
 
-
 ## 05. 游戏操作
 
 |发送方|接受方|含义|内容|
 |---|---|---|---|
 |客户端|服务器|打牌|uno02 playcard username|
-|客户端|服务器|抽牌|uno02 drawcard username|
-|客户端|服务器|说 UNO|uno02 sayuno username|
-|服务器|客户端|抽牌返回|uno02 drawcard|
+|客户端|服务器|抽牌|uno02 drawcard username roomnum|
+|客户端|服务器|说 UNO|uno02 sayuno username roomnum|
+|服务器|客户端|出牌轮次返回|uno02 turn username|
+|服务器|客户端|抽牌返回|uno02 drawcard username unoCardJson|

@@ -27,6 +27,7 @@ public:
     static void broadcastRoomStatus(string roomNum); // 广播房间状态
     static void quitRoom(string username, int fd); // 退出游戏房间 uno02 quitroom username
     static void gameStart(int room); // 游戏对局初始化
+    static void drawCard(string username, string roomNum); // uno02 drawcard username roomNum
     static vector<GameTable> &getGameTables();
 };
 

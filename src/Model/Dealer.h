@@ -23,7 +23,7 @@ public:
 
     void spreadOut(vector<Player *> &players);
 
-    UNOCard getACard();
+    UNOCard giveOneCard();
 
     const stack<UNOCard> &getCardStack() const;
 

@@ -3,6 +3,7 @@
 //
 #include "socklib.h"
 
+
 struct sockaddr_in saddr; /* build our address here */
 
 int make_server_socket(int portnum) {
@@ -77,6 +78,21 @@ int unicast(int fd, const char *msg) {
         printTime();
         printf("Send send to client #%d exception : %s\n",
                fd, msg);
+    }
+    return len;
+}
+
+/**
+ * 向房间内玩家发送消息
+ * @param players 房间内玩家
+ * @param msg 消息
+ * @return 发送的总字节数
+ */
+int multicast(const vector<Player *> &players, char *msg) {
+    int len = 0;
+    for (Player *roomReceiver:players) {
+        // 向房间内所有玩家发送房间内各玩家信息
+        len += unicast(roomReceiver->getFd(), msg);
     }
     return len;
 }

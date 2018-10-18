@@ -17,6 +17,7 @@
 
 #include "TimeUtil.h"
 #include "../Service/UserService.h"
+#include "../Model/Player.h"
 
 using namespace std;
 
@@ -26,6 +27,8 @@ int make_server_socket(int portnum);
 int make_server_socket_q(int, int);
 
 int unicast(int fd, const char *msg);
+
+int multicast(const vector<Player *> &players, char *msg);
 
 int broadcast(const char *msg);
 

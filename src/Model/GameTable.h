@@ -40,6 +40,8 @@ public:
 
     Player *getPlayer(const string &username);
 
+    Player *getNextPlayer(const string &username);
+
     Player *getPlayer(int i);
 
     string getPlayerName(int i);
@@ -57,6 +59,10 @@ public:
     Dealer &getDealer();
 
     const stack<UNOCard> &getCardStack() const;
+
+    UNOCard drawCard(string username);
+
+    string nextTurn(string username);
 };
 
 #endif //UNOSERVER_GAMETABLE_H

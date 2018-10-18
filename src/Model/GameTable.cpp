@@ -43,6 +43,15 @@ Player *GameTable::getPlayer(const string &username) {
     return nullptr;
 }
 
+Player *GameTable::getNextPlayer(const string &username) {
+    int i = 0;
+    for (; i < players.size(); i++) {
+        if (players[i]->getUsername() == username)
+            break;
+    }
+    return players[(i + 1) % players.size()];
+}
+
 Player *GameTable::getPlayer(int i) {
     if (i >= players.size())
         return nullptr;
@@ -88,11 +97,28 @@ Dealer &GameTable::getDealer() {
 void GameTable::gameStart() {
     if (status != GAMING)
         return;
-
     // 设定出牌顺序
     int firstPlayer = (randomNumber(GameTable::PLAYERMAX - 1));
     players[firstPlayer]->setIsMyTurn(true);
     // 从牌桌向玩家发牌
     dealer.shuffle();
     dealer.spreadOut(players);
+}
+
+UNOCard GameTable::drawCard(string username) {
+    Player *player = this->getPlayer(username);
+    if (!player->isIsMyTurn()) {
+        printTime();
+        printf("GameTable: game turn error\n");
+    }
+    return player->obtainOneCard(dealer.giveOneCard()); // 取牌
+}
+
+string GameTable::nextTurn(string username) {
+    this->getPlayer(username)->setIsMyTurn(false);
+    Player *nextPlayer = getNextPlayer(username);
+    if (nextPlayer != nullptr) {
+        nextPlayer->setIsMyTurn(true);
+        return nextPlayer->getUsername();
+    }
 }
