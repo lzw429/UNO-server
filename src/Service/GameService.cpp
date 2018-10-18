@@ -209,11 +209,14 @@ void GameService::drawCard(string username, string roomNum) {
     UNOCard unoCard = gameTable.drawCard(username); // 将牌返回给房间内所有客户
     string nextPlayerName = gameTable.nextTurn(username); // 调整出牌顺序
 
-    // 返回消息
+    // 返回 drawcard
     char *msg = new char[1024];
-    string unoCardJson = unoCard.toJson();
-    sprintf(msg, "uno02 draw %s %s", username.c_str(), unoCardJson.c_str());
-
+    string unoCardJson = unoCard.toJson(); // 以 \n 结尾
+    unoCardJson = unoCardJson.substr(0, unoCardJson.size() - 1);
+    sprintf(msg, "uno02 draw %s %s\r\n", username.c_str(), unoCardJson.c_str());
+    multicast(players, msg);
+    memset(msg, 0, sizeof(msg));
+    // 返回 nextTurn
     sprintf(msg, "uno02 turn %s\r\n", nextPlayerName.c_str());
     multicast(players, msg);
     delete[]msg;
