@@ -213,7 +213,7 @@ void GameService::drawCard(string username, string roomNum) {
     char *msg = new char[1024];
     string unoCardJson = unoCard.toJson(); // 以 \n 结尾
     unoCardJson = unoCardJson.substr(0, unoCardJson.size() - 1);
-    sprintf(msg, "uno02 draw %s %s\r\n", username.c_str(), unoCardJson.c_str());
+    sprintf(msg, "uno02 drawcard %s %s\r\n", username.c_str(), unoCardJson.c_str());
     multicast(players, msg);
     memset(msg, 0, sizeof(msg));
     // 返回 nextTurn

@@ -60,6 +60,7 @@ Player *GameTable::getPlayer(int i) {
 
 void GameTable::removePlayer(const string &username) {
     for (auto i = players.begin(); i != players.end(); i++) {
+        // todo 非法访问？
         if ((*i) != nullptr && (*i)->getUsername() == username) {
             delete (*i);
             players.erase(i);
