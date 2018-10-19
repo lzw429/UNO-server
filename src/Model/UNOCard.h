@@ -79,10 +79,6 @@ public:
     }
 
     /* 构造函数 */
-    UNOCard(int number, int color, int type)
-            : number(number), color(color), type(type), value(0) {
-    }
-
     UNOCard(int number, int color, int type, int value)
             : number(number), color(color), type(type),
               value(value) {}

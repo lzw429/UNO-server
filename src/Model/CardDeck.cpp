@@ -14,28 +14,28 @@ vector<UNOCard> CardDeck::shuffle() {
     UNOCards.clear();
     int cardNumber = 0;
     for (int color:UNO_COLORS) {
-        // 创建 76 张数字牌，除了 0 每个数字 2 张
-        for (int num:UNO_NUMBERS) {
+        // 创建 76 张数字牌，除了 0 每个数字 2 张，每个数字有 4 种颜色
+        for (int value:UNO_NUMBERS) {
             int i = 0;
             do {
-                UNOCard unoCard(cardNumber++, color, UNOCard::NUMBER, num);
+                UNOCard unoCard(cardNumber++, color, UNOCard::NUMBER, value);
                 UNOCards.push_back(unoCard);
                 i++;
-            } while (num != 0 && i < 2);
+            } while (value != 0 && i < 2);
         }
 
         // 创建 24 张动作牌，每种颜色每种动作类型 2 张
-        for (int type: actionTypes) {
+        for (int value: actionTypes) {
             for (int i = 0; i < 2; i++) {
-                UNOCard unoCard(cardNumber++, color, UNOCard::ACTION, type);
+                UNOCard unoCard(cardNumber++, color, UNOCard::ACTION, value);
                 UNOCards.push_back(unoCard);
             }
         }
     }
     // 创建万能牌
-    for (int type:wildTypes) {
+    for (int value:wildTypes) {
         for (int i = 0; i < 4; i++) {
-            UNOCard unoCard(cardNumber++, UNOCard::BLACK, type);
+            UNOCard unoCard(cardNumber++, UNOCard::BLACK, UNOCard::WILD, value);
             UNOCards.push_back(unoCard);
         }
     }

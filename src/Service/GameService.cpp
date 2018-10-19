@@ -220,4 +220,17 @@ void GameService::drawCard(string username, string roomNum) {
     sprintf(msg, "uno02 turn %s\r\n", nextPlayerName.c_str());
     multicast(players, msg);
     delete[]msg;
+
+    remainCard(room); // 更新剩余卡牌数
+}
+
+void GameService::remainCard(int room) {
+    GameTable &gameTable = gameTables[room];
+    const vector<Player *> &players = gameTable.getPlayers();
+
+    char *msg = new char[64];
+    int remainCardNum = static_cast<int>(gameTable.getDealer().getCardStack().size());
+    sprintf(msg, "uno02 remaincard %d\r\n", remainCardNum);
+    multicast(players, msg);
+    delete[]msg;
 }
