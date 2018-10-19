@@ -112,7 +112,8 @@ UNOCard GameTable::drawCard(string username) {
         printTime();
         printf("GameTable: game turn error\n");
     }
-    return player->obtainOneCard(dealer.giveOneCard()); // 取牌
+    // 模型层 取牌
+    return player->obtainOneCard(dealer.giveOneCard());
 }
 
 string GameTable::nextTurn(string username) {

@@ -17,6 +17,8 @@ void GameService::process_rq(const vector<string> &request, int fd) {
         quitRoom(request[2], fd);
     } else if (request[1] == "drawcard") { // 请求抽牌
         drawCard(request[2], request[3]);
+    } else if (request[1] == "playcard") { // 请求打牌
+        playCard(request[2], request[3], request[4]);
     }
 }
 
@@ -179,13 +181,7 @@ void GameService::gameStart(int room) {
 
     // 生成消息中的 JSON
     const vector<Player *> &players = gameTable.getPlayers();
-    string playersJson;
-    for (Player *const roomPlayer:players) {
-        string playerJson = roomPlayer->toJson(); // 以 \n 结尾
-        playerJson = playerJson.substr(0, playerJson.size() - 1);
-        playersJson += playerJson + " "; // 玩家之间以空格分隔
-    }
-    playersJson = playersJson.substr(0, playersJson.size() - 1); // 删除最后的空格
+    string playersJson = getPlayersJson(gameTable); // 空格等已处理
     string firstCardJson = gameTable.getDealer().giveOneCard().toJson(); // 以 \n 结尾
     firstCardJson = firstCardJson.substr(0, firstCardJson.size() - 1);
     int remainCardNum = (int) (gameTable.getDealer().getCardStack().size()); // 剩余牌数 默认：108 - 2 * 8 - 1
@@ -206,7 +202,8 @@ void GameService::drawCard(string username, string roomNum) {
 
     if (gameTable.getStatus() != GameTable::GAMING)
         return;
-    UNOCard unoCard = gameTable.drawCard(username); // 将牌返回给房间内所有客户
+    // 修改模型层；稍后将牌返回给房间内所有客户
+    UNOCard unoCard = gameTable.drawCard(username);
     string nextPlayerName = gameTable.nextTurn(username); // 调整出牌顺序
 
     // 返回 drawcard
@@ -233,4 +230,35 @@ void GameService::remainCard(int room) {
     sprintf(msg, "uno02 remaincard %d\r\n", remainCardNum);
     multicast(players, msg);
     delete[]msg;
+}
+
+void GameService::playCard(string username, string roomNum, string cardNumStr) {
+    int cardNum = stoi(cardNumStr);
+    int room = stoi(roomNum);
+    GameTable &gameTable = gameTables[room];
+    auto players = gameTable.getPlayers();
+    // 删掉玩家手中的牌
+    Player *player = gameTable.getPlayer(username);
+    UNOCard topCard = player->playCard(cardNum); // 删除打出的牌，并计数
+    gameTable.nextTurn(username); // 调整出牌顺序
+
+    string topCardJson = topCard.toJson();
+
+    // 客户端需更新牌桌上的牌以及手中的牌，自行统计打出的牌数
+    char *msg = new char[BUFSIZ];
+    sprintf(msg, "uno02 playcard %s %s %s", username.c_str(), topCardJson.c_str(), getPlayersJson(gameTable).c_str());
+    multicast(players, msg);
+    delete[] msg;
+}
+
+string GameService::getPlayersJson(GameTable &gameTable) {
+    const vector<Player *> &players = gameTable.getPlayers();
+    string ret;
+    for (Player *const roomPlayer:players) {
+        string playerJson = roomPlayer->toJson(); // 以 \n 结尾
+        playerJson = playerJson.substr(0, playerJson.size() - 1);
+        ret += playerJson + " "; // 玩家之间以空格分隔
+    }
+    ret = ret.substr(0, ret.size() - 1); // 删除最后的空格
+    return ret;
 }

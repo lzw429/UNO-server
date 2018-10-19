@@ -73,7 +73,7 @@ public:
         this->saidUNO = saidUNO;
     }
 
-    const vector<UNOCard> &getMyCards() const {
+    vector<UNOCard> &getMyCards()  {
         return myCards;
     }
 
@@ -98,8 +98,21 @@ public:
         return card;
     }
 
-    void playCard(int cardNumber) {
-        // todo
+/**
+ * 删除打出的牌，并计数
+ * @param cardNumber 牌号
+ */
+    UNOCard playCard(int cardNumber) {
+        UNOCard unoCard;
+        for (auto i = myCards.begin(); i != myCards.end(); i++) {
+            if ((*i).getNumber() == cardNumber) {
+                unoCard = *i;
+                myCards.erase(i);
+                playedCards++;
+                break;
+            }
+        }
+        return unoCard;
     }
 
     void sayUNO() {

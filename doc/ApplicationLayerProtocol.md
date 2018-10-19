@@ -40,9 +40,10 @@ Content 每行代表一个房间: player1,player2,status\r\n
 
 |发送方|接受方|含义|内容|
 |---|---|---|---|
-|客户端|服务器|打牌|uno02 playcard username|
+|客户端|服务器|打牌|uno02 playcard username roomnum cardnum|
 |客户端|服务器|抽牌|uno02 drawcard username roomnum|
 |客户端|服务器|说 UNO|uno02 sayuno username roomnum|
 |服务器|客户端|出牌轮次返回|uno02 turn username|
 |服务器|客户端|抽牌返回|uno02 drawcard username unoCardJson|
 |服务器|客户端|剩余牌数返回|uno02 remaincard remainCardNum|
+|服务器|客户端|打牌返回|uno02 playcard username topCardJson playerJson|

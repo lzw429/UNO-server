@@ -20,6 +20,9 @@ class GameService : public GameConstants {
 private:
     static vector<GameTable> gameTables;
 public:
+    static vector<GameTable> &getGameTables();
+    static string getPlayersJson(GameTable &gameTable);
+
     static void process_rq(const vector<string> &request, int fd); // 处理请求
     static void unicastGameTables(int fd); // 发送游戏房间 uno02 hall\r\n\r\nContent
     static void enterRoom(string username, string roomNum, int fd); // 进入游戏房间 uno02 enterroom username roomNumber
@@ -29,7 +32,7 @@ public:
     static void gameStart(int room); // 游戏对局初始化
     static void drawCard(string username, string roomNum); // uno02 drawcard username roomNum
     static void remainCard(int room); // uno02 remaincard remainCardNum
-    static vector<GameTable> &getGameTables();
+    static void playCard(string username, string roomNum, string cardNumStr); // uno02 playcard username roomnum cardnum
 };
 
 #endif //UNOSERVER_GAMESERVICE_H

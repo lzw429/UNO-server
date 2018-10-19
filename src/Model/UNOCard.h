@@ -79,9 +79,11 @@ public:
     }
 
     /* 构造函数 */
-    UNOCard(int number, int color, int type, int value)
-            : number(number), color(color), type(type),
-              value(value) {}
+    UNOCard(int number, int color, int type, int value);
+
+    UNOCard(); // 默认构造函数
+
+    UNOCard(const UNOCard &unoCard); // 拷贝构造函数
 
     /**
      * 返回 UNOCard 的 JSON 表示

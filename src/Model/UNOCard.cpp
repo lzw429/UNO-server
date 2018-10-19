@@ -18,3 +18,12 @@ string UNOCard::toJson() {
     write_json(ss, toJsonElement(), false);
     return ss.str();
 }
+
+UNOCard::UNOCard(int number, int color, int type, int value)
+        : number(number), color(color), type(type),
+          value(value) {}
+
+UNOCard::UNOCard() {}
+
+UNOCard::UNOCard(const UNOCard &unoCard) : number(unoCard.number), color(unoCard.color), type(unoCard.type),
+                                           value(unoCard.value) {}
