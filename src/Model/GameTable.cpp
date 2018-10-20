@@ -35,7 +35,7 @@ string GameTable::getPlayerName(int i) {
     return players[i]->getUsername();
 }
 
-Player *GameTable::getPlayer(const string &username) {
+Player *GameTable::getPlayerByUsername(const string &username) {
     for (auto player:players) {
         if (player->getUsername() == username)
             return player;
@@ -52,7 +52,7 @@ Player *GameTable::getNextPlayer(const string &username) {
     return players[(i + 1) % players.size()];
 }
 
-Player *GameTable::getPlayer(int i) {
+Player *GameTable::getPlayerByIndex(int i) {
     if (i >= players.size())
         return nullptr;
     return *(players.begin() + i);
@@ -107,7 +107,7 @@ void GameTable::gameStart() {
 }
 
 UNOCard GameTable::drawCard(string username) {
-    Player *player = this->getPlayer(username);
+    Player *player = this->getPlayerByUsername(username);
     if (!player->isIsMyTurn()) {
         printTime();
         printf("GameTable: game turn error\n");
@@ -117,7 +117,7 @@ UNOCard GameTable::drawCard(string username) {
 }
 
 string GameTable::nextTurn(string username) {
-    this->getPlayer(username)->setIsMyTurn(false);
+    this->getPlayerByUsername(username)->setIsMyTurn(false);
 
     Player *nextPlayer = getNextPlayer(username);
     if (nextPlayer != nullptr) {

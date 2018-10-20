@@ -30,8 +30,8 @@ void GameService::unicastGameTables(int fd) {
     string msg = "uno02 hall\r\n\r\n";
     try {
         for (GameTable gameTable:gameTables) {
-            Player *player0 = gameTable.getPlayer(0);
-            Player *player1 = gameTable.getPlayer(1);
+            Player *player0 = gameTable.getPlayerByIndex(0);
+            Player *player1 = gameTable.getPlayerByIndex(1);
             string username0 = (player0 != nullptr) ? player0->getUsername() : "";
             string username1 = (player1 != nullptr) ? player1->getUsername() : "";
             msg += username0 + "," + username1 + "," + to_string(gameTable.getStatus()) + "\r\n";
@@ -238,17 +238,42 @@ void GameService::playCard(string username, string roomNum, string cardNumStr) {
     GameTable &gameTable = gameTables[room];
     auto players = gameTable.getPlayers();
     // 删掉玩家手中的牌
-    Player *player = gameTable.getPlayer(username);
+    Player *player = gameTable.getPlayerByUsername(username);
     UNOCard topCard = player->playCard(cardNum); // 删除打出的牌，并计数
-    gameTable.nextTurn(username); // 调整出牌顺序
+    string nextPlayerName = gameTable.nextTurn(username); // 调整出牌顺序
+    if (topCard.getType() == UNOCard::ACTION) {
+        gameTable.nextTurn(nextPlayerName);
+        if (topCard.getValue() == UNOCard::REVERSE || topCard.getValue() == UNOCard::SKIP) {
+            // 使用 SKIP 牌
+        } else if (topCard.getValue() == UNOCard::DRAW2PLUS) {
+            // 使用 DRAW TWO 牌
+            Player *nextPlayer = gameTable.getPlayerByUsername(nextPlayerName);
+            nextPlayer->obtainOneCard(gameTable.getDealer().giveOneCard());
+            nextPlayer->obtainOneCard(gameTable.getDealer().giveOneCard());
+        }
+    }
 
     string topCardJson = topCard.toJson();
 
+    // 判断是否说 UNO
+    int playerCardNum = static_cast<int>(player->getMyCards().size());
+    if (playerCardNum == 1 && !player->isSaidUNO()) { // 忘记说 UNO
+        string error = player->getUsername() + " 忘了说 UNO";
+        setError(error, room); // 告知房间内所有玩家，该玩家忘记说 UNO
+        player->obtainOneCard(gameTable.getDealer().giveOneCard()); // 为该用户加 2 张牌
+        player->obtainOneCard(gameTable.getDealer().giveOneCard());
+    } else if (playerCardNum > 2) { // 在大于 2 张牌时说 UNO 无效，需要在剩余恰好 2 张牌时说
+        player->setSaidUNO(false);
+    }
+
     // 客户端需更新牌桌上的牌以及手中的牌
     char *msg = new char[BUFSIZ];
-    sprintf(msg, "uno02 playcard %s %s %s\r\n", username.c_str(), topCardJson.c_str(), getPlayersJson(gameTable).c_str());
+    sprintf(msg, "uno02 playcard %s %s %s\r\n", username.c_str(), topCardJson.c_str(),
+            getPlayersJson(gameTable).c_str());
     multicast(players, msg);
     delete[] msg;
+
+    remainCard(room); // 更新剩余卡牌数
 }
 
 string GameService::getPlayersJson(GameTable &gameTable) {
@@ -261,4 +286,13 @@ string GameService::getPlayersJson(GameTable &gameTable) {
     }
     ret = ret.substr(0, ret.size() - 1); // 删除最后的空格
     return ret;
+}
+
+void GameService::setError(string error, int room) { // uno02 seterror error
+    GameTable &gameTable = gameTables[room];
+    const auto &players = gameTable.getPlayers();
+    char *msg = new char[64];
+    sprintf(msg, "uno02 seterror %s\r\n", error.c_str());
+    multicast(players, msg);
+    delete[]msg;
 }

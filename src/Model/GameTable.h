@@ -38,11 +38,11 @@ public:
 
     void addPlayer(Player *player);
 
-    Player *getPlayer(const string &username);
+    Player *getPlayerByUsername(const string &username);
 
     Player *getNextPlayer(const string &username);
 
-    Player *getPlayer(int i);
+    Player *getPlayerByIndex(int i);
 
     string getPlayerName(int i);
 

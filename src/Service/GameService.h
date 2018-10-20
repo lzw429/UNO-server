@@ -21,6 +21,7 @@ private:
     static vector<GameTable> gameTables;
 public:
     static vector<GameTable> &getGameTables();
+
     static string getPlayersJson(GameTable &gameTable);
 
     static void process_rq(const vector<string> &request, int fd); // 处理请求
@@ -33,6 +34,7 @@ public:
     static void drawCard(string username, string roomNum); // uno02 drawcard username roomNum
     static void remainCard(int room); // uno02 remaincard remainCardNum
     static void playCard(string username, string roomNum, string cardNumStr); // uno02 playcard username roomnum cardnum
+    static void setError(string error, int room); // uno02 seterror error
 };
 
 #endif //UNOSERVER_GAMESERVICE_H

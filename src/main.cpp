@@ -77,14 +77,13 @@ int main(int ac, char *av[]) {
     printTime();
     printf("UNOServer: main thread has started\n");
 
-    signal(SIGINT, closeSocket); // 处理信号
-    signal(SIGPIPE, SIG_IGN);
-
     int ret = pthread_create(&listen, &attr, listenClientsThread, nullptr); // 创建监听客户端的线程
     threadCreateRet(ret);
     ret = pthread_create(&process, &attr, processThread, nullptr); // 创建处理请求的线程
     threadCreateRet(ret);
 
+    signal(SIGINT, closeSocket); // 处理信号
+    signal(SIGPIPE, SIG_IGN);
 
     // 主循环，接收请求，以新线程处理请求
 #pragma clang diagnostic push
