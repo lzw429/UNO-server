@@ -118,6 +118,7 @@ UNOCard GameTable::drawCard(string username) {
 
 string GameTable::nextTurn(string username) {
     this->getPlayer(username)->setIsMyTurn(false);
+
     Player *nextPlayer = getNextPlayer(username);
     if (nextPlayer != nullptr) {
         nextPlayer->setIsMyTurn(true);

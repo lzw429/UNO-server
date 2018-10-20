@@ -244,9 +244,9 @@ void GameService::playCard(string username, string roomNum, string cardNumStr) {
 
     string topCardJson = topCard.toJson();
 
-    // 客户端需更新牌桌上的牌以及手中的牌，自行统计打出的牌数
+    // 客户端需更新牌桌上的牌以及手中的牌
     char *msg = new char[BUFSIZ];
-    sprintf(msg, "uno02 playcard %s %s %s", username.c_str(), topCardJson.c_str(), getPlayersJson(gameTable).c_str());
+    sprintf(msg, "uno02 playcard %s %s %s\r\n", username.c_str(), topCardJson.c_str(), getPlayersJson(gameTable).c_str());
     multicast(players, msg);
     delete[] msg;
 }
