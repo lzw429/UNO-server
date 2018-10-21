@@ -90,18 +90,19 @@ public:
     }
 
     /**
-       * 获取一张牌
-       * @param card 来自发牌者的牌
-       */
+     * 获取一张牌
+     * @param card 来自发牌者的牌
+     * @return 获得的牌
+     */
     UNOCard obtainOneCard(UNOCard card) {
         myCards.push_back(card);
         return card;
     }
 
-/**
- * 删除打出的牌，并计数
- * @param cardNumber 牌号
- */
+    /**
+     * 删除打出的牌，并计数
+     * @param cardNumber 牌号
+     */
     UNOCard playCard(int cardNumber) {
         UNOCard unoCard;
         for (auto i = myCards.begin(); i != myCards.end(); i++) {

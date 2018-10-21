@@ -44,9 +44,14 @@ void Dealer::spreadOut(vector<Player *> &players) {
 }
 
 UNOCard Dealer::giveOneCard() {
-    UNOCard ret = this->cardStack.top();
-    this->cardStack.pop();
-    return ret;
+    if (!cardStack.empty()) {
+        UNOCard ret = this->cardStack.top();
+        this->cardStack.pop();
+        return ret;
+    } else {
+        printTime();
+        printf("Dealer: there is no card to give\n");
+    }
 }
 
 const stack<UNOCard> &Dealer::getCardStack() const {

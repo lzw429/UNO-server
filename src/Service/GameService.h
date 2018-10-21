@@ -33,8 +33,10 @@ public:
     static void gameStart(int room); // 游戏对局初始化
     static void drawCard(string username, string roomNum); // uno02 drawcard username roomNum
     static void remainCard(int room); // uno02 remaincard remainCardNum
-    static void playCard(string username, string roomNum, string cardNumStr); // uno02 playcard username roomnum cardnum
+    static void playCard(const vector<string> &request); // uno02 playcard username roomnum cardnum
     static void setError(string error, int room); // uno02 seterror error
+    static bool checkGameOver(int room); // 检查游戏是否结束 uno02 gameover
+    static void setWildColor(int room, int color); // uno02 wildcolor colornum
 };
 
 #endif //UNOSERVER_GAMESERVICE_H

@@ -18,7 +18,7 @@ void GameService::process_rq(const vector<string> &request, int fd) {
     } else if (request[1] == "drawcard") { // 请求抽牌
         drawCard(request[2], request[3]);
     } else if (request[1] == "playcard") { // 请求打牌
-        playCard(request[2], request[3], request[4]);
+        playCard(request);
     }
 }
 
@@ -232,24 +232,35 @@ void GameService::remainCard(int room) {
     delete[]msg;
 }
 
-void GameService::playCard(string username, string roomNum, string cardNumStr) {
+void GameService::playCard(const vector<string> &request) {
+    string username = request[2];
+    string roomNum = request[3];
+    string cardNumStr = request[4];
+    int wildColor = -1;
+
     int cardNum = stoi(cardNumStr);
     int room = stoi(roomNum);
     GameTable &gameTable = gameTables[room];
     auto players = gameTable.getPlayers();
+
     // 删掉玩家手中的牌
     Player *player = gameTable.getPlayerByUsername(username);
     UNOCard topCard = player->playCard(cardNum); // 删除打出的牌，并计数
     string nextPlayerName = gameTable.nextTurn(username); // 调整出牌顺序
-    if (topCard.getType() == UNOCard::ACTION) {
+
+    if (topCard.getType() == UNOCard::ACTION) { // 使用动作牌
         gameTable.nextTurn(nextPlayerName);
         if (topCard.getValue() == UNOCard::REVERSE || topCard.getValue() == UNOCard::SKIP) {
             // 使用 SKIP 牌
         } else if (topCard.getValue() == UNOCard::DRAW2PLUS) {
             // 使用 DRAW TWO 牌
-            Player *nextPlayer = gameTable.getPlayerByUsername(nextPlayerName);
-            nextPlayer->obtainOneCard(gameTable.getDealer().giveOneCard());
-            nextPlayer->obtainOneCard(gameTable.getDealer().giveOneCard());
+            gameTable.drawCards(nextPlayerName, 2);
+        }
+    } else if (topCard.getType() == UNOCard::WILD) { // 使用万能牌
+        wildColor = stoi(request[5]);
+        if (topCard.getValue() == UNOCard::DRAW4PLUS) {
+            // 使用 DRAW FOUR 牌
+            gameTable.drawCards(nextPlayerName, 4);
         }
     }
 
@@ -259,9 +270,8 @@ void GameService::playCard(string username, string roomNum, string cardNumStr) {
     int playerCardNum = static_cast<int>(player->getMyCards().size());
     if (playerCardNum == 1 && !player->isSaidUNO()) { // 忘记说 UNO
         string error = player->getUsername() + " 忘了说 UNO";
-        setError(error, room); // 告知房间内所有玩家，该玩家忘记说 UNO
-        player->obtainOneCard(gameTable.getDealer().giveOneCard()); // 为该用户加 2 张牌
-        player->obtainOneCard(gameTable.getDealer().giveOneCard());
+        setError(error, room); // todo 告知房间内所有玩家，该玩家忘记说 UNO
+        gameTable.drawCards(username, 2); // 为该用户加 2 张牌
     } else if (playerCardNum > 2) { // 在大于 2 张牌时说 UNO 无效，需要在剩余恰好 2 张牌时说
         player->setSaidUNO(false);
     }
@@ -274,6 +284,9 @@ void GameService::playCard(string username, string roomNum, string cardNumStr) {
     delete[] msg;
 
     remainCard(room); // 更新剩余卡牌数
+    if (topCard.getType() == UNOCard::WILD)
+        setWildColor(room, wildColor); // 万能牌指定颜色
+    checkGameOver(room); // 检查房间内游戏是否已结束
 }
 
 string GameService::getPlayersJson(GameTable &gameTable) {
@@ -293,6 +306,40 @@ void GameService::setError(string error, int room) { // uno02 seterror error
     const auto &players = gameTable.getPlayers();
     char *msg = new char[64];
     sprintf(msg, "uno02 seterror %s\r\n", error.c_str());
+    multicast(players, msg);
+    delete[]msg;
+}
+
+/**
+ * 检查房间内游戏是否已结束
+ * @param room 房间号
+ * @return 结束返回 true；游戏中返回 false
+ */
+bool GameService::checkGameOver(int room) {
+    bool ret = false;
+    GameTable &gameTable = gameTables[room];
+    const auto &players = gameTable.getPlayers();
+    for (Player *player:players) {
+        if (player->getMyCards().empty())
+            ret = true;
+    }
+    if (ret) {
+        for (Player *player:players) { // 所有玩家不得再出牌
+            player->setIsMyTurn(false);
+        }
+        char *msg = new char[32];
+        sprintf(msg, "uno02 gameover\r\n");
+        multicast(players, msg);
+        delete[]msg;
+    }
+    return ret;
+}
+
+void GameService::setWildColor(int room, int color) {
+    GameTable &gameTable = gameTables[room];
+    const auto &players = gameTable.getPlayers();
+    char *msg = new char[32];
+    sprintf(msg, "uno02 wildcolor %d\r\n", color);
     multicast(players, msg);
     delete[]msg;
 }

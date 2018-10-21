@@ -63,6 +63,8 @@ public:
     UNOCard drawCard(string username);
 
     string nextTurn(string username);
+
+    void drawCards(string username, int n);
 };
 
 #endif //UNOSERVER_GAMETABLE_H

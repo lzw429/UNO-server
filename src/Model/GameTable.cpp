@@ -125,3 +125,10 @@ string GameTable::nextTurn(string username) {
         return nextPlayer->getUsername();
     }
 }
+
+void GameTable::drawCards(string username, int n) {
+    Player *player = this->getPlayerByUsername(username);
+    for (int i = 0; i < n; i++) {
+        player->obtainOneCard(dealer.giveOneCard());
+    }
+}

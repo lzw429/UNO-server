@@ -40,15 +40,18 @@ Content 每行代表一个房间: player1,player2,status\r\n
 
 |发送方|接受方|含义|内容|
 |---|---|---|---|
-|客户端|服务器|打牌|uno02 playcard username roomnum cardnum|
+|客户端|服务器|打数字牌或功能牌|uno02 playcard username roomnum cardnum|
+|客户端|服务器|打万能牌|uno02 playcard username roomnum cardnum colornum|
 |客户端|服务器|抽牌|uno02 drawcard username roomnum|
 |客户端|服务器|说 UNO|uno02 sayuno username roomnum|
 |服务器|客户端|出牌轮次返回|uno02 turn username|
 |服务器|客户端|抽牌返回|uno02 drawcard username unoCardJson|
 |服务器|客户端|剩余牌数返回|uno02 remaincard remainCardNum|
 |服务器|客户端|打牌返回|uno02 playcard username topCardJson playerJson|
+|服务器|客户端|万能牌指定颜色返回|uno02 wildcolor colornum|
 
-## 06. 消息通知
+## 06. 游戏消息
 |发送方|接受方|含义|内容|
 |---|---|---|---|
 |服务器|客户端|忘记说 UNO|uno02 seterror error|
+|服务器|客户端|游戏结束|uno02 gameover|
