@@ -109,25 +109,30 @@ void GameService::quitRoom(string username, int fd) {
 
     if (user_i == users.end()) {
         printTime();
-        printf("GameService: user %s (client #%d) does not exist", username.c_str(), fd);
+        printf("GameService: user %s (client #%d) does not exist\n", username.c_str(), fd);
         return;
     }
     User &user = users[username];
     int room = user.getRoomNum(); // 获得房间号
+    if (room == -1) {
+        printTime();
+        printf("GameService: user %s (client #%d) is not in a room\n", username.c_str(), fd);
+        return;
+    }
     user.setRoomNum(-1);
     GameTable &gameTable = gameTables[room];
     gameTable.removePlayer(username); // 退出房间
 
     // 修改房间状态
     if (gameTable.getPlayers().empty()) { // 房间为空闲
+        // 有玩家重新进入该房间时，牌将重置
         gameTable.setStatus(GameTable::IDLE);
-        // todo 重置房间内的牌
-
     } else { // 房间继续等待其他玩家
         gameTable.setStatus(GameTable::WAITING);
     }
     printTime();
-    printf("GameService: player %s (client #%d) has quit room #%d\n", username.c_str(), fd, room);
+    if (room != -1)
+        printf("GameService: player %s (client #%d) has quit room #%d\n", username.c_str(), fd, room);
     broadcastRoomStatus(room);
 }
 
@@ -207,6 +212,9 @@ void GameService::drawCard(string username, string roomNum) {
         return;
     // 修改模型层；稍后将牌返回给房间内所有客户
     UNOCard unoCard = gameTable.drawCard(username);
+    Player *player = gameTable.getPlayerByUsername(username);
+    if (!player->getMyCards().empty())
+        player->setSaidUNO(false);
     string nextPlayerName = gameTable.nextTurn(username); // 调整出牌顺序
 
     // 返回 drawcard
@@ -245,6 +253,8 @@ void GameService::playCard(const vector<string> &request) {
     int room = stoi(roomNum);
     GameTable &gameTable = gameTables[room];
     auto players = gameTable.getPlayers();
+    string error;
+    bool forgetSayUNO = false;
 
     // 删掉玩家手中的牌
     Player *player = gameTable.getPlayerByUsername(username);
@@ -272,13 +282,13 @@ void GameService::playCard(const vector<string> &request) {
     // 判断是否说 UNO
     int playerCardNum = static_cast<int>(player->getMyCards().size());
     if (playerCardNum == 1 && !player->isSaidUNO()) { // 忘记说 UNO
-        string error = player->getUsername() + " 忘了说 UNO";
-        setError(error, room); // todo 告知房间内所有玩家，该玩家忘记说 UNO
         gameTable.drawCards(username, 2); // 为该用户加 2 张牌
+        forgetSayUNO = true;
     } else if (playerCardNum > 2) { // 在大于 2 张牌时说 UNO 无效，需要在剩余恰好 2 张牌时说
         player->setSaidUNO(false);
     }
 
+    /** 发送消息 **/
     // 客户端需更新牌桌上的牌以及手中的牌
     char *msg = new char[BUFSIZ];
     sprintf(msg, "uno02 playcard %s %s %s\r\n", username.c_str(), topCardJson.c_str(),
@@ -289,6 +299,10 @@ void GameService::playCard(const vector<string> &request) {
     remainCard(room); // 更新剩余卡牌数
     if (topCard.getType() == UNOCard::WILD)
         setWildColor(room, wildColor); // 万能牌指定颜色
+    if (forgetSayUNO) { // 忘记说 UNO
+        error = "0 " + username;
+        setError(error, room); // 告知房间内所有玩家，该玩家忘记说 UNO
+    }
     checkGameOver(room); // 检查房间内游戏是否已结束
 }
 
@@ -351,5 +365,7 @@ void GameService::sayUNO(string username, string roomNum) {
     int room = stoi(roomNum);
     GameTable &gameTable = gameTables[room];
     Player *player = gameTable.getPlayerByUsername(username);
+    if (player->getMyCards().size() > 2) // 大于两张时说 UNO 无效
+        return;
     player->setSaidUNO(true);
 }

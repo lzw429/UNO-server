@@ -32,8 +32,6 @@ public:
 
     GameTable();
 
-    explicit GameTable(int mode); // todo 构造函数
-
     const vector<Player *> &getPlayers() const;
 
     void addPlayer(Player *player);

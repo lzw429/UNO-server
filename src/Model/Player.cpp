@@ -77,6 +77,8 @@ void Player::setPlayedCards(int playedCards) {
 }
 
 UNOCard Player::obtainOneCard(UNOCard card) {
+    if (!this->getMyCards().empty())
+        this->setSaidUNO(false);
     myCards.push_back(card);
     return card;
 }
