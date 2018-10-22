@@ -36,14 +36,31 @@ stack<UNOCard> Dealer::shuffle() {
 void Dealer::spreadOut(vector<Player *> &players) {
     for (int i = 1; i <= firstHand; i++) { // firstHand 是初始牌数
         for (Player *p:players) {
-            p->obtainOneCard(cardStack.top()); // 玩家从牌栈里拿一张
-            cardStack.pop();
+            p->obtainOneCard(this->giveOneCard()); // 玩家从牌栈里拿一张
         }
     }
 }
 
 UNOCard Dealer::giveOneCard() {
-    if (!cardStack.empty()) {
+    if (cardStack.size() == 108) {
+        stack <UNOCard> tempCardStack;
+        UNOCard ret;
+        while (true) {
+            ret = this->cardStack.top();
+            this->cardStack.pop();
+            if (ret.getType() != UNOCard::WILD) {
+                while (!tempCardStack.empty()) {
+                    cardStack.push(tempCardStack.top());
+                    tempCardStack.pop();
+                }
+                break;
+            } else {
+                tempCardStack.push(ret);
+                continue;
+            }
+        }
+        return ret;
+    } else if (!cardStack.empty()) {
         UNOCard ret = this->cardStack.top();
         this->cardStack.pop();
         return ret;

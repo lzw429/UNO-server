@@ -179,12 +179,13 @@ vector<GameTable> &GameService::getGameTables() {
  */
 void GameService::gameStart(int room) {
     GameTable &gameTable = gameTables[room];
-    gameTable.gameStart();
+    UNOCard firstCard;
+    gameTable.gameStart(firstCard);
 
     // 生成消息中的 JSON
     const vector<Player *> &players = gameTable.getPlayers();
     string playersJson = getPlayersJson(gameTable); // 空格等已处理
-    string firstCardJson = gameTable.getDealer().giveOneCard().toJson(); // 以 \n 结尾
+    string firstCardJson = firstCard.toJson(); // 以 \n 结尾
     firstCardJson = firstCardJson.substr(0, firstCardJson.size() - 1);
     int remainCardNum = (int) (gameTable.getDealer().getCardStack().size()); // 剩余牌数 默认：108 - 2 * 8 - 1
 

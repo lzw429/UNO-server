@@ -54,7 +54,7 @@ public:
 
     void setStatus(int status);
 
-    void gameStart();
+    void gameStart(UNOCard &firstCard);
 
     Dealer &getDealer();
 

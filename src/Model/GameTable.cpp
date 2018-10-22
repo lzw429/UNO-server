@@ -95,15 +95,16 @@ Dealer &GameTable::getDealer() {
  * 设定出牌顺序
  * 向玩家发牌
  */
-void GameTable::gameStart() {
+void GameTable::gameStart(UNOCard &firstCard) {
     if (status != GAMING)
         return;
     // 设定出牌顺序
     int firstPlayer = (randomNumber(GameTable::PLAYERMAX - 1));
     players[firstPlayer]->setIsMyTurn(true);
-    // 从牌桌向玩家发牌
-    dealer.shuffle();
-    dealer.spreadOut(players);
+
+    dealer.shuffle(); // 拿牌并洗牌
+    firstCard = dealer.giveOneCard(); // 抽出首张牌
+    dealer.spreadOut(players); // 发给玩家
 }
 
 UNOCard GameTable::drawCard(string username) {
