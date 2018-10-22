@@ -19,6 +19,8 @@ void GameService::process_rq(const vector<string> &request, int fd) {
         drawCard(request[2], request[3]);
     } else if (request[1] == "playcard") { // 请求打牌
         playCard(request);
+    } else if (request[1] == "sayuno") { // 请求说 UNO
+        sayUNO(request[2], request[3]);
     }
 }
 
@@ -342,4 +344,11 @@ void GameService::setWildColor(int room, int color) {
     sprintf(msg, "uno02 wildcolor %d\r\n", color);
     multicast(players, msg);
     delete[]msg;
+}
+
+void GameService::sayUNO(string username, string roomNum) {
+    int room = stoi(roomNum);
+    GameTable &gameTable = gameTables[room];
+    Player *player = gameTable.getPlayerByUsername(username);
+    player->setSaidUNO(true);
 }

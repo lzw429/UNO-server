@@ -15,8 +15,7 @@ stack<UNOCard> Dealer::shuffle() {
         int totalCards = (int) (deck.size());
 
         // 获取随机位置
-        default_random_engine random;
-        int pos = static_cast<int>(random()) % totalCards;
+        int pos = getRandomIntByTime() % totalCards;
 
         UNOCard randomCard = deck[pos];
         deck.erase(deck.begin() + pos);

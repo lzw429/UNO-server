@@ -14,6 +14,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace boost::property_tree;
@@ -30,111 +31,52 @@ public:
      * 构造函数
      * @param user 用户
      */
-    Player(User user)
-            : User(user), isMyTurn(false), saidUNO(false), playedCards(0) {
-    }
+    Player(User user);
 
     /**
      * 构造函数
      * @param username 用户名
      */
-    Player(string username) : isMyTurn(false),
-                              saidUNO(false), playedCards(0) { // 构造方法
-        this->username = std::move(username); // 继承
-    }
+    Player(string username);
 
     /**
      * 拷贝构造函数
      * @param player 被拷贝对象
      */
-    Player(const Player &player)
-            : isMyTurn(player.isMyTurn), saidUNO(player.saidUNO),
-              playedCards(player.playedCards) {
-        for (auto unoCard:player.myCards) {
-            myCards.push_back(unoCard);
-        }
-    }
+    Player(const Player &player);
 
     /* getter & setter */
 
-    bool isIsMyTurn() const {
-        return isMyTurn;
-    }
+    bool isIsMyTurn() const;
 
-    void setIsMyTurn(bool isMyTurn) {
-        this->isMyTurn = isMyTurn;
-    }
+    void setIsMyTurn(bool isMyTurn);
 
-    bool isSaidUNO() const {
-        return saidUNO;
-    }
+    bool isSaidUNO() const;
 
-    void setSaidUNO(bool saidUNO) {
-        this->saidUNO = saidUNO;
-    }
+    void setSaidUNO(bool saidUNO);
 
-    vector<UNOCard> &getMyCards()  {
-        return myCards;
-    }
+    vector<UNOCard> &getMyCards();
 
-    void setMyCards(const vector<UNOCard> &myCards) {
-        this->myCards = myCards;
-    }
+    void setMyCards(const vector<UNOCard> &myCards);
 
-    int getPlayedCards() const {
-        return playedCards;
-    }
+    int getPlayedCards() const;
 
-    void setPlayedCards(int playedCards) {
-        this->playedCards = playedCards;
-    }
+    void setPlayedCards(int playedCards);
 
     /**
      * 获取一张牌
      * @param card 来自发牌者的牌
      * @return 获得的牌
      */
-    UNOCard obtainOneCard(UNOCard card) {
-        myCards.push_back(card);
-        return card;
-    }
+    UNOCard obtainOneCard(UNOCard card);
 
     /**
      * 删除打出的牌，并计数
      * @param cardNumber 牌号
      */
-    UNOCard playCard(int cardNumber) {
-        UNOCard unoCard;
-        for (auto i = myCards.begin(); i != myCards.end(); i++) {
-            if ((*i).getNumber() == cardNumber) {
-                unoCard = *i;
-                myCards.erase(i);
-                playedCards++;
-                break;
-            }
-        }
-        return unoCard;
-    }
+    UNOCard playCard(int cardNumber);
 
-    void sayUNO() {
-        // todo
-    }
-
-    string toJson() {
-        ptree playerJson, myCardsJson;
-        playerJson.put("username", username);
-        playerJson.put("isMyTurn", isMyTurn);
-
-        for (UNOCard &unoCard:myCards) {
-            ptree unoCardJson = unoCard.toJsonElement();
-            myCardsJson.push_back(make_pair("", unoCardJson)); // JSON 数组
-        }
-        playerJson.add_child("myCards", myCardsJson);
-
-        stringstream ss;
-        write_json(ss, playerJson, false);
-        return ss.str();
-    }
+    string toJson();
 };
 
 #endif //UNOSERVER_PLAYER_H

@@ -21,4 +21,6 @@ string getTimeInMillis();
 
 void printTime();
 
+int getRandomIntByTime();
+
 #endif //UNOSERVER_TIMEUTIL_H

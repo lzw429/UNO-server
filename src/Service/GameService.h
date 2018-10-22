@@ -32,6 +32,7 @@ public:
     static void quitRoom(string username, int fd); // 退出游戏房间 uno02 quitroom username
     static void gameStart(int room); // 游戏对局初始化
     static void drawCard(string username, string roomNum); // uno02 drawcard username roomNum
+    static void sayUNO(string username, string roomNum); // uno02 sayuno username roomnum
     static void remainCard(int room); // uno02 remaincard remainCardNum
     static void playCard(const vector<string> &request); // uno02 playcard username roomnum cardnum
     static void setError(string error, int room); // uno02 seterror error
