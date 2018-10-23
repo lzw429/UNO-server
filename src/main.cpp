@@ -4,7 +4,6 @@
 #include "Util/socklib.h"
 #include "Model/Request.h"
 #include "Service/GameService.h"
-#include <boost/algorithm/string.hpp>
 
 #define TV_SEC 3 // timeval 秒数
 #define TV_USEC 0 // timeval 毫秒数
@@ -50,11 +49,9 @@ queue<Request> requests; // 请求队列
 
 int main(int ac, char *av[]) {
     int fd;
-    int *fdptr;
     pthread_t listen; // 监听客户端
     pthread_t process;  // 处理请求
     pthread_attr_t attr;
-    // todo setup process
 
     if (ac == 1) {
         fprintf(stderr, "usage: UNOServer portnum\n");
@@ -67,7 +64,7 @@ int main(int ac, char *av[]) {
         exit(2);
     }
 
-    setup(&attr);
+    setup(&attr); // 设置线程属性 attr
 
     // 初始化统计数据 todo 统计
     time(&server_started);
@@ -109,9 +106,13 @@ int main(int ac, char *av[]) {
 
 // 函数实现
 
+/**
+ * 设置线程属性
+ * @param attrp 线程属性
+ */
 void setup(pthread_attr_t *attrp) {
     pthread_attr_init(attrp);
-    pthread_attr_setdetachstate(attrp, PTHREAD_CREATE_DETACHED);
+    pthread_attr_setdetachstate(attrp, PTHREAD_CREATE_DETACHED); // 分离线程
 }
 
 /**
