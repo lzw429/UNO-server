@@ -41,6 +41,8 @@ void GameService::unicastGameTables(int fd) {
         unicast(fd, msg.c_str());
     } catch (exception &e) {
         printf("%s\nGameService: send game tables exception\n", e.what());
+        fprintf(logFile, "%s\nGameService: send game tables exception\n", e.what());
+        fflush(logFile);
     }
 }
 
@@ -58,6 +60,8 @@ void GameService::enterRoom(string username, string roomNum, int fd) {
     if (room > gameTables.size() || room < 0) {
         printTime();
         printf("GameService: room number exception");
+        fprintf(logFile, "GameService: room number exception");
+        fflush(logFile);
         return;
     }
     unordered_map<string, User> &users = UserService::getUsers();
@@ -92,6 +96,8 @@ void GameService::enterRoom(string username, string roomNum, int fd) {
     unicast(fd, msg); // 单播登录结果
     printTime();
     printf("GameService: user %s has entered room #%s", username.c_str(), roomNum.c_str());
+    fprintf(logFile, "GameService: user %s has entered room #%s", username.c_str(), roomNum.c_str());
+    fflush(logFile);
     delete[]msg;
     broadcastRoomStatus(roomNum); // 广播该房间状态
     if (start)
@@ -110,6 +116,8 @@ void GameService::quitRoom(string username, int fd) {
     if (user_i == users.end()) {
         printTime();
         printf("GameService: user %s (client #%d) does not exist\n", username.c_str(), fd);
+        fprintf(logFile, "GameService: user %s (client #%d) does not exist\n", username.c_str(), fd);
+        fflush(logFile);
         return;
     }
     User &user = users[username];
@@ -117,6 +125,8 @@ void GameService::quitRoom(string username, int fd) {
     if (room == -1) {
         printTime();
         printf("GameService: user %s (client #%d) is not in a room\n", username.c_str(), fd);
+        fprintf(logFile, "GameService: user %s (client #%d) is not in a room\n", username.c_str(), fd);
+        fflush(logFile);
         return;
     }
     user.setRoomNum(-1);
@@ -131,8 +141,11 @@ void GameService::quitRoom(string username, int fd) {
         gameTable.setStatus(GameTable::WAITING);
     }
     printTime();
-    if (room != -1)
+    if (room != -1) {
         printf("GameService: player %s (client #%d) has quit room #%d\n", username.c_str(), fd, room);
+        fprintf(logFile, "GameService: player %s (client #%d) has quit room #%d\n", username.c_str(), fd, room);
+        fflush(logFile);
+    }
     broadcastRoomStatus(room);
 }
 

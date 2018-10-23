@@ -12,6 +12,8 @@ int main(int ac, char *av[]) {
 
     if (ac == 1) {
         fprintf(stderr, "usage: UNOServer portnum\n");
+        fprintf(logFile, "usage: UNOServer portnum\n");
+        fflush(logFile);
         exit(1);
     }
 
@@ -30,13 +32,15 @@ int main(int ac, char *av[]) {
 
     printTime();
     printf("UNOServer: main thread has started\n");
+    fprintf(logFile, "UNOServer: main thread has started\n");
+    fflush(logFile);
 
     int ret = pthread_create(&listen, &attr, listenClientsThread, nullptr); // 创建监听客户端的线程
     threadCreateRet(ret);
     ret = pthread_create(&process, &attr, processThread, nullptr); // 创建处理请求的线程
     threadCreateRet(ret);
 
-    signal(SIGINT, closeSocket); // 处理信号
+    signal(SIGINT, SIG_INT_Response); // 处理信号
     signal(SIGPIPE, SIG_IGN);
 
     // 主循环，接收请求，以新线程处理请求
@@ -53,8 +57,12 @@ int main(int ac, char *av[]) {
         server_requests++;
         printTime();
         printf("UNOServer: accept client #%d\n", fd);
+        fprintf(logFile, "UNOServer: accept client #%d\n", fd);
+        fflush(logFile);
         printTime();
         printf("UNOServer: server request number: %d\n", server_requests);
+        fprintf(logFile, "UNOServer: server request number: %d\n", server_requests);
+        fflush(logFile);
         fdSet.set(fd);
         pthread_mutex_unlock(&fdSetMutex);
     }

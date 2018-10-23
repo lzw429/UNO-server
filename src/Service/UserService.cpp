@@ -2,7 +2,6 @@
 // Created by syh on 10/9/18.
 //
 #include "UserService.h"
-#include "GameService.h"
 
 // 静态变量声明
 unordered_map<string, User> UserService::users;
@@ -32,10 +31,14 @@ int UserService::login(const string &username, int fd) {
         msg += " 0\r\n";
         printTime();
         printf("UserService: user %s cannot be registered again\n", username.c_str());
+        fprintf(logFile, "UserService: user %s cannot be registered again\n", username.c_str());
+        fflush(logFile);
     } else { // 该用户未注册
         msg += " 1\r\n";
         printTime();
         printf("UserService: user %s got registered\n", username.c_str());
+        fprintf(logFile, "UserService: user %s got registered\n", username.c_str());
+        fflush(logFile);
         User user(username, fd);
         users[username] = user;
     }

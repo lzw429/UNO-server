@@ -1,5 +1,3 @@
-#include <utility>
-
 //
 // Created by syh on 9/27/18.
 //
@@ -7,23 +5,22 @@
 #ifndef UNOSERVER_GAMESERVICE_H
 #define UNOSERVER_GAMESERVICE_H
 
+#include <utility>
 #include <cstdio>
 #include <string>
 #include <vector>
 #include "UserService.h"
 #include "../Model/GameTable.h"
-#include "../Util/OnlineUtil.h"
 
 using namespace std;
 
 class GameService : public GameConstants {
 private:
     static vector<GameTable> gameTables;
+
 public:
-    static vector<GameTable> &getGameTables();
-
-    static string getPlayersJson(GameTable &gameTable);
-
+    static vector<GameTable> &getGameTables(); // 静态变量 gameTables 的 getter
+    static string getPlayersJson(GameTable &gameTable); // 获取某房间的玩家 JSON
     static void process_rq(const vector<string> &request, int fd); // 处理请求
     static void unicastGameTables(int fd); // 发送游戏房间 uno02 hall\r\n\r\nContent
     static void enterRoom(string username, string roomNum, int fd); // 进入游戏房间 uno02 enterroom username roomNumber

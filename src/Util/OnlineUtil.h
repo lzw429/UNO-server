@@ -1,5 +1,5 @@
-#ifndef SOCKLIB_H
-#define SOCKLIB_H
+#ifndef ONLINEUTIL_H
+#define ONLINEUTIL_H
 
 #include <cstdio>
 #include <unistd.h>
@@ -44,6 +44,8 @@ extern int sock;
 extern bitset<FD_SIZ> fdSet; // 文件描述符位图
 extern queue<Request> requests; // 请求队列
 
+extern FILE *logFile;
+
 // 函数声明
 
 void setup(pthread_attr_t *attrp);
@@ -54,7 +56,7 @@ void process_rq(char *request, int fd);
 
 void *processThread(void *); // 处理请求的线程
 
-void closeSocket(int);
+void SIG_INT_Response(int);
 
 void process_msg(int fd);
 
@@ -73,4 +75,4 @@ int multicast(const vector<Player *> &players, char *msg);
 
 int broadcast(const char *msg);
 
-#endif// SOCKLIB_H
+#endif// ONLINEUTIL_H

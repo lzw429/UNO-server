@@ -45,4 +45,6 @@ int getRandomIntByTime() {
  */
 void printTime() {
     printf("[%s] ", getTimeInMillis().c_str());
+    fprintf(logFile, "[%s] ", getTimeInMillis().c_str());
+    fflush(logFile);
 }

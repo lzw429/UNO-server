@@ -2,6 +2,7 @@
 // Created by syh on 10/15/18.
 //
 #include "Dealer.h"
+#include "../Util/OnlineUtil.h"
 
 /**
   * 洗牌
@@ -43,7 +44,7 @@ void Dealer::spreadOut(vector<Player *> &players) {
 
 UNOCard Dealer::giveOneCard() {
     if (cardStack.size() == 108) {
-        stack <UNOCard> tempCardStack;
+        stack<UNOCard> tempCardStack;
         UNOCard ret;
         while (true) {
             ret = this->cardStack.top();
@@ -67,6 +68,8 @@ UNOCard Dealer::giveOneCard() {
     } else {
         printTime();
         printf("Dealer: there is no card to give\n");
+        fprintf(logFile, "Dealer: there is no card to give\n");
+        fflush(logFile);
     }
 }
 

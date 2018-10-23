@@ -1,7 +1,10 @@
 //
 // Created by syh on 10/9/18.
 //
+
 #include "OnlineUtil.h"
+
+FILE *logFile = fopen("UNOserver.txt", "a+");
 
 // 互斥量
 pthread_mutex_t fdSetMutex = PTHREAD_MUTEX_INITIALIZER; // 用于 fdSet
@@ -73,9 +76,14 @@ int unicast(int fd, const char *msg) {
         printTime();
         printf("Server: %d bytes in total; send to client #%d, len = %d: %s",
                server_bytes_sent, fd, len, msg);
+        fprintf(logFile, "Server: %d bytes in total; send to client #%d, len = %d: %s",
+                server_bytes_sent, fd, len, msg);
+        fflush(logFile);
     } else {
         printTime();
         printf("Send send to client #%d exception : %s\n", fd, msg);
+        fprintf(logFile, "Send send to client #%d exception : %s\n", fd, msg);
+        fflush(logFile);
     }
     return len;
 }
@@ -101,8 +109,7 @@ int multicast(const vector<Player *> &players, char *msg) {
  * @return 发送的总字节数
  */
 int broadcast(const char *msg) {
-    UserService userService;
-    auto users = userService.getUsers();
+    auto users = UserService::getUsers();
     int len = 0;
     string msgStr = msg;
     for (auto item:users) {
@@ -138,6 +145,8 @@ void *listenClientsThread(void *ptr) {
 
     printTime();
     printf("UNOServer: listening thread has started\n");
+    fprintf(logFile, "UNOServer: listening thread has started\n");
+    fflush(logFile);
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
@@ -187,6 +196,8 @@ void process_msg(int fd) {
     if (n > 0) {
         printTime();
         printf("Receive from client #%d: request = %s", fd, buf);
+        fprintf(logFile, "Receive from client #%d: request = %s", fd, buf);
+        fflush(logFile);
         // 将消息放入队列
         string content = buf;
         Request request(content, fd);
@@ -202,6 +213,8 @@ void process_msg(int fd) {
         close(fd);
         printTime();
         printf("Receive from client #%d: disconnect\n", fd);
+        fprintf(logFile, "Receive from client #%d: disconnect\n", fd);
+        fflush(logFile);
     }
 }
 
@@ -213,6 +226,8 @@ void process_msg(int fd) {
 void *processThread(void *ptr) {
     printTime();
     printf("UNOServer: process request thread has started\n");
+    fprintf(logFile, "UNOServer: process request thread has started\n");
+    fflush(logFile);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (true) {
@@ -244,13 +259,17 @@ void process_rq(char *request, int fd) {
     }
 }
 
-void closeSocket(int signum) {
-#ifndef CLOSESOCKET
+void SIG_INT_Response(int signum) {
+#ifndef SIG_INT_RESPONSE
+#define SIG_INT_RESPONSE
     if (sock != -1) {
         shutdown(sock, SHUT_RDWR);
         printTime();
         printf("UNOServer: Socket shutdown\n");
+        fprintf(logFile, "UNOServer: Socket shutdown\n");
+        fflush(logFile);
     }
+    fclose(logFile);
 #endif
 }
 

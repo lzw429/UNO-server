@@ -41,6 +41,8 @@ vector<UNOCard> CardDeck::shuffle() {
     }
     printTime();
     printf("CardDeck: %d cards has been created\n", cardNumber);
+    fprintf(logFile, "CardDeck: %d cards has been created\n", cardNumber);
+    fflush(logFile);
     return UNOCards;
 }
 

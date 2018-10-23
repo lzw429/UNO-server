@@ -26,6 +26,8 @@ void GameTable::addPlayer(Player *player) {
     } else {
         printTime();
         printf("GameTable: this table is already full\n");
+        fprintf(logFile, "GameTable: this table is already full\n");
+        fflush(logFile);
     }
 }
 
