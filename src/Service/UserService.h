@@ -10,7 +10,7 @@
 #define UNOSERVER_USERSERVICE_H
 
 #include "../Model/User.h"
-#include "../Util/socklib.h"
+#include "../Util/OnlineUtil.h"
 
 using namespace std;
 
