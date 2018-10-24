@@ -2,6 +2,7 @@
 // Created by syh on 10/15/18.
 //
 #include "GameTable.h"
+#include "../Util/OnlineUtil.h"
 
 // 静态变量
 // status 常量
